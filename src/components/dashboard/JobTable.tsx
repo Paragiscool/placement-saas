@@ -6,7 +6,7 @@ import { useApplications } from '@/hooks/useApplications'
 import { useUser } from '@/hooks/useUser'
 import { formatCTC, getCatConfig } from '@/lib/cat-config'
 import Badge from '@/components/ui/Badge'
-import PrepModal from '@/components/dashboard/PrepModal'
+import PrepModal from './PrepModal'
 import type { Job, ApplicationStatus, FilterState } from '@/types'
 import { ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink } from 'lucide-react'
 
