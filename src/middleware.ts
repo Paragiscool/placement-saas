@@ -4,8 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  if (!url.startsWith('http')) url = 'https://' + url
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    url,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
     {
       cookies: {
