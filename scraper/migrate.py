@@ -32,16 +32,25 @@ def migrate_local_data():
         
         # Transform for Supabase `jobs` schema
         jobs_to_insert = []
+        seen = set()
         for row in raw_data:
-            cat_group, category = categorize_role(row.get('Position', ''))
+            company = row.get('Company', 'Unknown')
+            role = row.get('Position', 'Unknown Role')
+            
+            # Deduplicate before sending to Supabase
+            if (company, role) in seen:
+                continue
+            seen.add((company, role))
+            
+            cat_group, category = categorize_role(role)
             
             # If the old data already had a category, we can trust it, 
             # otherwise fallback to our categorizer
             final_cat = row.get('Category') if row.get('Category') else category
             
             job = {
-                "company": row.get('Company', 'Unknown'),
-                "role": row.get('Position', 'Unknown Role'),
+                "company": company,
+                "role": role,
                 "ctc": row.get('CTC_LPA') or clean_ctc(row.get('CTC')),
                 "currency": row.get('Currency', 'INR'),
                 "location": "India", # Default assumption for KGP
