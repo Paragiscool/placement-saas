@@ -1,64 +1,62 @@
-from fastapi import FastAPI, HTTPException, Header
-from pydantic import BaseModel
-from typing import List, Optional
 import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from supabase import create_client
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
-load_dotenv(r'c:\Users\patle\OneDrive\Documents\Desktop\placement-saas\.env.local')
+load_dotenv(dotenv_path="../.env.local")
 
-app = FastAPI(title="PlacementIQ Ingestion API")
+app = FastAPI()
 
-# Initialize Supabase service client
-URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-supabase = create_client(URL, KEY) if URL and KEY else None
+# 1. BULLETPROOF CORS CONFIGURATION
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class JobPayload(BaseModel):
-    company: str
-    role: str
-    ctc: Optional[float] = None
-    currency: str = "INR"
-    location: str = "India"
-    category: Optional[str] = None
-    apply_link: Optional[str] = None
+# 2. INITIALIZE SECURE CLIENTS
+supabase = create_client(os.getenv("NEXT_PUBLIC_SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "supabase_connected": supabase is not None}
+# 3. USE ULTRA-STABLE MODELS (No experimental versions)
+embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7) 
 
-@app.post("/ingest")
-def ingest_jobs(jobs: List[JobPayload], authorization: str = Header(None)):
-    """
-    Webhook endpoint to ingest jobs from external scrapers.
-    Expects a Bearer token matching a local secret.
-    """
-    expected_token = os.environ.get("API_SECRET_TOKEN", "dev-secret-token")
-    if not authorization or authorization != f"Bearer {expected_token}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-        
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Database not configured")
+class ChatRequest(BaseModel):
+    message: str
 
-    # Format for Supabase
-    db_payload = []
-    for j in jobs:
-        db_payload.append({
-            "company": j.company,
-            "role": j.role,
-            "ctc": j.ctc,
-            "currency": j.currency,
-            "location": j.location,
-            "category": j.category,
-            "apply_link": j.apply_link,
-            "source": "api_scraper"
-        })
-
-    # Upsert to Postgres
+@app.post("/api/chat")
+async def chat_with_ai(request: ChatRequest):
     try:
-        res = supabase.table("jobs").upsert(db_payload, on_conflict="company,role").execute()
-        return {"status": "success", "inserted": len(res.data)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Step 1: Turn the user's message into a vector
+        query_vector = embeddings.embed_query(request.message)
 
-# Run locally with: uvicorn main:app --reload
+        # Step 2: Search Supabase
+        search_result = supabase.rpc(
+            "match_jobs",
+            {"query_embedding": query_vector, "match_threshold": 0.5, "match_count": 3}
+        ).execute()
+
+        context_text = "\n".join([item["content"] for item in search_result.data])
+
+        # Step 3: Construct the prompt
+        system_prompt = f"""
+        You are a friendly, sharp, and highly supportive senior student at IIT Kharagpur who recently cracked top Day 1 placements. 
+        You are conducting a mock interview with a junior.
+        
+        Context from PlacementIQ Database: {context_text}
+        
+        Junior's Message: {request.message}
+        """
+
+        # Step 4: Get response
+        response = llm.invoke(system_prompt)
+        return {"reply": response.content}
+        
+    except Exception as e:
+        # IF ANYTHING BREAKS, SEND THE ERROR TO THE CHAT UI!
+        return {"reply": f"**Backend Crash Report:** `{str(e)}`"}
