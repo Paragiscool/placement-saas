@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], 
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://placement-saas-three.vercel.app"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -110,6 +110,67 @@ async def chat_with_ai(request: ChatRequest):
         
     except Exception as e:
         return {"reply": f"**Backend Crash Report:** `{str(e)}`"}
+
+
+# What the Next.js frontend sends us
+class TranscriptMessage(BaseModel):
+    role: str
+    content: str
+
+class EvaluationRequest(BaseModel):
+    messages: List[TranscriptMessage]
+    job_context: str # e.g., "Google SDE L4"
+
+# What Gemini will return to us
+class ScorecardResult(BaseModel):
+    technical_depth_score: int
+    communication_score: int
+    problem_solving_score: int
+    strengths: List[str]
+    areas_for_improvement: List[str]
+    final_verdict: str
+
+@app.post("/api/evaluate")
+async def evaluate_interview(request: EvaluationRequest):
+    try:
+        # 1. Format the transcript into a single string for the AI to read
+        transcript_text = "\n".join([f"{msg.role.upper()}: {msg.content}" for msg in request.messages])
+        
+        # 2. The Master Evaluator Prompt
+        system_prompt = f"""
+        You are a strict, FAANG-level Principal Engineer and Hiring Manager.
+        Review the following interview transcript for a {request.job_context} role.
+        
+        Evaluate the candidate on a scale of 1-10 for:
+        1. Technical Depth (Accuracy, system design, algorithm optimization)
+        2. Communication (Clarity, structure, not rambling)
+        3. Problem Solving (Handling edge cases, adapting to hints)
+        
+        Provide 2 specific strengths, 2 specific areas for improvement, and a final verdict (e.g., 'Strong Hire', 'Lean Hire', 'No Hire').
+        You must be highly critical. Do not give 10/10 unless the candidate was flawless.
+        
+        TRANSCRIPT:
+        {transcript_text}
+        """
+
+        # 3. Call Gemini, forcing it to return the exact Pydantic JSON structure
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash", # Flash is perfect and fast for this
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json",
+                response_schema=ScorecardResult,
+                temperature=0.2 # Low temperature for consistent grading
+            )
+        )
+        
+        response = model.generate_content(system_prompt)
+        
+        # 4. Parse the JSON and return it to the Next.js frontend
+        scorecard = json.loads(response.text)
+        return {"status": "success", "scorecard": scorecard}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 class ScorecardRequest(BaseModel):
