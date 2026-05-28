@@ -1,0 +1,56 @@
+{
+  "document_id": "doc_resource_kdag_thinktank_001",
+  "metadata": {
+    "source_type": "Student_Society_Repository",
+    "source_url": "https://kdagiitkgp.com/resources",
+    "extraction_date": "2026-05-28",
+    "managing_entity": "Kharagpur Data Analytics Group (KDAG)",
+    "resource_type": "Interview_Compendium",
+    "confidence_score": 0.95
+  },
+  "resource_details": {
+    "resource_title": "CDC 101: Think Tank",
+    "description": "A master compendium of logic puzzles and advanced probability problems scraped from historical interview panels at tier-one financial institutions. Serves as the definitive preparation resource for quantitative finance and data science roles at IIT KGP.",
+    "target_disciplines": [
+      "Quantitative Finance",
+      "Data Science",
+      "Business Analytics",
+      "Management Trainee roles"
+    ],
+    "target_corporate_archetypes": [
+      "Goldman Sachs",
+      "JP Morgan",
+      "Morgan Stanley",
+      "American Express (AMEX)",
+      "Tower Research Capital",
+      "AlphaGrep",
+      "Quadeye"
+    ],
+    "curriculum_metrics": {
+      "total_logic_puzzles": 200,
+      "total_probability_problems": 120,
+      "difficulty_range": "Medium to Extreme"
+    },
+    "core_theoretical_topics": [
+      "Bayes' Theorem derivations and applications",
+      "Mathematical expectations for complex stochastic processes",
+      "Continuous and discrete probability distributions",
+      "Statistical paradoxes (Monty Hall problem, Birthday Paradox, etc.)",
+      "Mental math and rapid calculation under duress",
+      "Risk calculation and expected value optimization",
+      "Conditional probability chains",
+      "Combinatorial probability"
+    ],
+    "recommended_supplementary_literature": [
+      "Fifty Challenging Problems in Probability (Frederick Mosteller)",
+      "Arun Sharma's CAT Quantitative Aptitude",
+      "Communique handbook: The Guessing Game (for Guesstimates)",
+      "Heard on the Street (Timothy Crack) for quant interviews"
+    ],
+    "access_information": {
+      "url": "https://kdagiitkgp.com/resources",
+      "access_type": "Public",
+      "format": "Web-based resource portal"
+    }
+  }
+}

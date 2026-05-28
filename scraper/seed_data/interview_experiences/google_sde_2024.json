@@ -1,0 +1,111 @@
+{
+  "document_id": "doc_interview_google_sde_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://codeclub-iitkgp.medium.com/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.92
+  },
+  "entity": {
+    "company_name": "Google",
+    "role_title": "SDE / SWE (L3/L4)",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics"],
+    "hiring_volume": "Selective (5-15 offers per campus)",
+    "compensation_tier": "Top-tier (highest CTC bracket)"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "Google's Internal Assessment Platform",
+      "duration_minutes": 90,
+      "total_questions": 3,
+      "core_topics_tested": [
+        "Graph traversals (BFS, DFS, Dijkstra)",
+        "Dynamic Programming (advanced)",
+        "Complex algorithmic design"
+      ],
+      "difficulty_rating": "Hard",
+      "notes": "Google adheres to its globally standardized L3/L4 hiring matrix. Candidates with exceptional competitive programming pedigrees (Codeforces rating > 1900, top 100 in Google Kickstart) are fast-tracked through screening rounds."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Onsite Coding Round",
+        "duration_minutes": 45,
+        "primary_focus": "Graph algorithms and traversals",
+        "specific_queries": [
+          "Complex graph traversal problems",
+          "Write syntactically perfect, highly optimized code on whiteboard/Google Doc",
+          "Rigorous algorithmic style with clean edge-case handling"
+        ],
+        "environment": "Whiteboard / Google Doc"
+      },
+      {
+        "round_sequence": 2,
+        "round_type": "Onsite Coding Round",
+        "duration_minutes": 45,
+        "primary_focus": "Dynamic Programming and optimization",
+        "specific_queries": [
+          "Advanced DP problems",
+          "State optimization and space reduction",
+          "Mathematical proofs of correctness"
+        ],
+        "environment": "Whiteboard / Google Doc"
+      },
+      {
+        "round_sequence": 3,
+        "round_type": "Onsite Coding Round",
+        "duration_minutes": 45,
+        "primary_focus": "Data structures and algorithm design",
+        "specific_queries": [
+          "Custom data structure design",
+          "Tree-based problems",
+          "Segment trees / Fenwick trees for competitive programming candidates"
+        ],
+        "environment": "Whiteboard / Google Doc"
+      },
+      {
+        "round_sequence": 4,
+        "round_type": "Onsite Coding Round",
+        "duration_minutes": 45,
+        "primary_focus": "System design (for L4) or algorithmic breadth (for L3)",
+        "specific_queries": [
+          "Scalable system architecture (L4 candidates)",
+          "Additional algorithmic breadth testing (L3 candidates)",
+          "Code quality and production readiness"
+        ],
+        "environment": "Whiteboard / Google Doc"
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 30,
+      "primary_focus": "Googleyness and Leadership",
+      "specific_queries": [
+        "Collaboration and teamwork examples",
+        "Handling ambiguity",
+        "Navigating disagreements constructively"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Graph algorithms (BFS, DFS, Dijkstra, Bellman-Ford, Topological Sort)",
+      "Advanced Dynamic Programming",
+      "System Design (for L4 roles)",
+      "Competitive programming (Codeforces, Google Kickstart)",
+      "Writing clean, production-quality code on whiteboard"
+    ],
+    "fast_track_criteria": [
+      "Codeforces rating exceeding 1900",
+      "Top 100 rank in Google Kickstart",
+      "Strong competitive programming track record"
+    ],
+    "recommended_resources": [
+      "LeetCode Google-tagged problems",
+      "System Design Primer (GitHub)",
+      "Codeforces practice (Div 1/2 problems)",
+      "Google Kickstart past problems"
+    ],
+    "estimated_prep_time_weeks": 8
+  }
+}

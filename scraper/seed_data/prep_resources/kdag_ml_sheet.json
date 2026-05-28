@@ -1,0 +1,75 @@
+{
+  "document_id": "doc_resource_kdag_mlsheet_001",
+  "metadata": {
+    "source_type": "Student_Society_Repository",
+    "source_url": "https://kdagiitkgp.com/ml_sheet",
+    "extraction_date": "2026-05-28",
+    "managing_entity": "Kharagpur Data Analytics Group (KDAG)",
+    "resource_type": "Curriculum_Roadmap",
+    "confidence_score": 0.95
+  },
+  "resource_details": {
+    "resource_title": "ML Sheet",
+    "description": "A 34-module progression through classical and modern Machine Learning. Corporate data science interviews heavily index classical algorithms over deep neural networks due to the necessity of model interpretability in corporate environments. This sheet provides the canonical preparation path used by IIT KGP students.",
+    "target_disciplines": [
+      "Data Science",
+      "Machine Learning Engineering",
+      "AI Research",
+      "Quantitative Analytics"
+    ],
+    "target_corporate_archetypes": [
+      "American Express",
+      "InfoEdge",
+      "Goldman Sachs (Strats)",
+      "Microsoft (Applied AI)",
+      "Google (ML Research)"
+    ],
+    "curriculum_metrics": {
+      "total_modules": 34,
+      "estimated_completion_weeks": 12,
+      "difficulty_progression": "Beginner to Advanced"
+    },
+    "core_theoretical_topics": [
+      "Linear Models (regression and classification)",
+      "Probabilistic Models (Naive Bayes)",
+      "Support Vector Machines (SVM)",
+      "Tree-Based Methods (Random Forests, Gradient Boosting / XGBoost)",
+      "Dimensionality Reduction (PCA, t-SNE)",
+      "Clustering (K-Means, DBSCAN, Hierarchical)",
+      "Neural Networks fundamentals",
+      "Ensemble Methods",
+      "Model evaluation and cross-validation",
+      "Feature engineering and selection",
+      "Bias-variance trade-off analysis",
+      "Gradient descent optimization variants"
+    ],
+    "practical_implementation_topics": [
+      "Python syntax and scientific computing (NumPy, Pandas)",
+      "Supervised Learning implementation",
+      "Unsupervised Learning implementation",
+      "Generative architectures using Flask backends and React frontends",
+      "NVIDIA Neuralangelo and StyleGAN implementations",
+      "Model deployment and serving"
+    ],
+    "github_resources": {
+      "organization": "Kharagpur-Data-Analytics-Group",
+      "url": "https://github.com/Kharagpur-Data-Analytics-Group",
+      "key_repositories": [
+        "ML-assignments",
+        "Winter-workshops",
+        "Summer-projects"
+      ]
+    },
+    "key_insight": "Corporate interviews heavily index classical ML algorithms (Random Forests, SVM, Linear Models) over deep learning due to interpretability requirements. Students over-indexing on neural networks at the expense of classical ML fundamentals consistently underperform in campus interviews.",
+    "recommended_supplementary_literature": [
+      "An Introduction to Statistical Learning (ISLR)",
+      "Pattern Recognition and Machine Learning (Bishop)",
+      "Hands-On Machine Learning with Scikit-Learn (Aurélien Géron)"
+    ],
+    "access_information": {
+      "url": "https://kdagiitkgp.com/ml_sheet",
+      "access_type": "Public",
+      "format": "Web-based structured curriculum"
+    }
+  }
+}

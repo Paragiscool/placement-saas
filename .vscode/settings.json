@@ -2,5 +2,9 @@
   "python.defaultInterpreterPath": "c:\\Users\\patle\\OneDrive\\Documents\\Desktop\\placement-saas\\scraper\\venv\\Scripts\\python.exe",
   "python.analysis.extraPaths": [
     "c:\\Users\\patle\\OneDrive\\Documents\\Desktop\\placement-saas\\scraper\\venv\\Lib\\site-packages"
+  ],
+  "python.venvPath": "c:\\Users\\patle\\OneDrive\\Documents\\Desktop\\placement-saas\\scraper",
+  "python.venvFolders": [
+    "venv"
   ]
 }

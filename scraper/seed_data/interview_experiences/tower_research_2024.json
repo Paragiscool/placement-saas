@@ -1,0 +1,117 @@
+{
+  "document_id": "doc_interview_tower_research_systems_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://codeclub-iitkgp.medium.com/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.88
+  },
+  "entity": {
+    "company_name": "Tower Research Capital",
+    "role_title": "Systems Engineer / Quant Developer",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics", "Physics"],
+    "hiring_volume": "Highly selective (3-8 offers)",
+    "compensation_tier": "Top-tier (HFT compensation bracket)"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "Custom Assessment Platform",
+      "duration_minutes": 120,
+      "total_questions": null,
+      "sections": [
+        {
+          "section_name": "MCQ - Computer Organization & Architecture",
+          "focus": "Bare-metal COA concepts, switching circuits, digital logic",
+          "question_type": "Multiple Choice",
+          "difficulty_rating": "Hard"
+        },
+        {
+          "section_name": "Debugging Section",
+          "focus": "Identifying and fixing bugs in faulty C++ and Python code snippets",
+          "question_type": "Code Debugging",
+          "difficulty_rating": "Medium-Hard"
+        },
+        {
+          "section_name": "Algorithmic Section",
+          "focus": "Array minimization problems, optimization algorithms",
+          "question_type": "Coding",
+          "difficulty_rating": "Hard"
+        }
+      ],
+      "core_topics_tested": [
+        "Computer Organization and Architecture (COA)",
+        "Switching Circuits and Digital Logic",
+        "C++ debugging and memory management",
+        "Python debugging",
+        "Array minimization algorithms"
+      ],
+      "difficulty_rating": "Hard",
+      "notes": "HFT OAs intentionally disregard standard LeetCode problems. They test systems-level knowledge that most SDE candidates never encounter."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Systems Architecture Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Distributed systems and storage architectures",
+        "specific_queries": [
+          "Internal architecture of Ceph distributed storage system",
+          "Data consistency protocols in distributed environments",
+          "Unix/Linux kernel administration and internals",
+          "Production orchestration: Docker, Kubernetes, Kafka architecture"
+        ],
+        "key_insight": "Interview functions as an interrogation on distributed systems. Standard DSA knowledge is insufficient."
+      },
+      {
+        "round_sequence": 2,
+        "round_type": "Low-Latency Systems Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Extreme low-latency programming and network internals",
+        "specific_queries": [
+          "epoll-based TCP server implementation",
+          "Socket programming (raw sockets, non-blocking I/O)",
+          "Memory leak prevention in C++ (RAII, smart pointers, valgrind usage)",
+          "Lock-free data structures and concurrent programming",
+          "CPU cache optimization for latency-sensitive code paths"
+        ],
+        "key_insight": "Candidates who lack top-tier CGPAs but possess god-tier understanding of systems programming are heavily favored over traditional DSA experts."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 15,
+      "primary_focus": "Team fit and risk assessment",
+      "specific_queries": [
+        "Handling high-pressure environments",
+        "Interest in financial markets",
+        "Long-term commitment to the firm"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Computer Organization & Architecture (COA)",
+      "Switching circuits and digital logic design",
+      "C++ memory management (RAII, smart pointers, valgrind)",
+      "epoll-based TCP servers and socket programming",
+      "Docker, Kubernetes, Kafka in production",
+      "Ceph distributed storage architecture",
+      "Unix/Linux kernel internals",
+      "Lock-free data structures",
+      "CPU cache optimization"
+    ],
+    "also_applies_to": [
+      "AlphaGrep",
+      "Quadeye",
+      "Other HFT / Quantitative hedge funds"
+    ],
+    "recommended_resources": [
+      "Linux kernel source code documentation",
+      "Beej's Guide to Network Programming",
+      "C++ Concurrency in Action (Anthony Williams)",
+      "Designing Data-Intensive Applications (Martin Kleppmann)"
+    ],
+    "estimated_prep_time_weeks": 10,
+    "key_differentiator": "Traditional CGPA and LeetCode skills matter less here. Deep systems knowledge (epoll, socket programming, memory management) is the primary differentiator."
+  }
+}

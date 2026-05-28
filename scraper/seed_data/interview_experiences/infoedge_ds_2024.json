@@ -1,0 +1,70 @@
+{
+  "document_id": "doc_interview_infoedge_ds_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://codeclub-iitkgp.medium.com/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.85
+  },
+  "entity": {
+    "company_name": "InfoEdge",
+    "role_title": "Data Science Intern / Analyst",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics"],
+    "hiring_volume": "Moderate",
+    "compensation_tier": "Mid-tier"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "HackerRank",
+      "duration_minutes": 75,
+      "total_questions": 3,
+      "core_topics_tested": [
+        "Intermediate Data Structures (arrays, strings)",
+        "Basic ML theory questions",
+        "Statistical reasoning"
+      ],
+      "difficulty_rating": "Medium",
+      "notes": "DSA difficulty generally capped at arrays and string manipulation for Data Science profiles. ML theory questions integrated directly into the OA."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Technical Data Science Interview",
+        "duration_minutes": 50,
+        "primary_focus": "Intersection of intermediate DSA with core ML theory",
+        "specific_queries": [
+          "Explain bias-variance trade-off with mathematical derivation",
+          "Dimensionality reduction: PCA mechanics and eigenvalue decomposition",
+          "Mathematical proofs underlying gradient descent convergence",
+          "Array and string manipulation coding problems (medium difficulty)",
+          "Feature selection strategies for text-heavy data (relevant to Naukri.com)"
+        ],
+        "key_insight": "InfoEdge emphasizes the amalgamation of intermediate Data Structures with core ML theory. Unlike SDE roles, no complex Graph or DP problems are asked."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 20,
+      "primary_focus": "Cultural fit and product interest",
+      "specific_queries": [
+        "Familiarity with InfoEdge products (Naukri, Jeevansathi, 99acres)",
+        "Interest in applying ML to recruitment/job matching"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Bias-variance trade-off",
+      "PCA and dimensionality reduction",
+      "Gradient descent mathematical proofs",
+      "Array and string manipulation (medium LeetCode)",
+      "Text feature engineering"
+    ],
+    "recommended_resources": [
+      "KDAG ML Sheet (first 15 modules)",
+      "LeetCode Easy-Medium arrays and strings",
+      "An Introduction to Statistical Learning (ISLR)"
+    ],
+    "estimated_prep_time_weeks": 4
+  }
+}

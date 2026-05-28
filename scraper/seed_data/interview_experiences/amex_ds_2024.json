@@ -1,0 +1,89 @@
+{
+  "document_id": "doc_interview_amex_ds_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://codeclub-iitkgp.medium.com/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.88
+  },
+  "entity": {
+    "company_name": "American Express",
+    "role_title": "Management Trainee / Data Science",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics", "Economics"],
+    "hiring_volume": "Moderate (10-25 offers)",
+    "compensation_tier": "Top-tier (financial services bracket)"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "Custom Assessment Platform",
+      "duration_minutes": 60,
+      "total_questions": null,
+      "core_topics_tested": [
+        "Quantitative aptitude (CAT-level rigor)",
+        "Logical reasoning",
+        "Data interpretation",
+        "Basic probability and statistics"
+      ],
+      "difficulty_rating": "Medium-Hard",
+      "notes": "The OA mirrors the rigor of the Common Admission Test (CAT). Speed and accuracy under time pressure are critical differentiators."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Guesstimates and Case Study",
+        "duration_minutes": 45,
+        "primary_focus": "Business modeling and probabilistic reasoning",
+        "specific_queries": [
+          "Guesstimate problems (market sizing, Fermi estimation)",
+          "Case studies deconstructing AMEX's credit and revenue business models",
+          "Mathematical modeling using probabilistic assumptions",
+          "Revenue estimation for specific AMEX product lines"
+        ],
+        "key_insight": "Interviewers test the candidate's ability to frame business problems mathematically. The Communique handbook 'The Guessing Game' is the definitive preparation resource."
+      },
+      {
+        "round_sequence": 2,
+        "round_type": "Technical Data Science Interview",
+        "duration_minutes": 45,
+        "primary_focus": "ML fundamentals and statistical reasoning",
+        "specific_queries": [
+          "Bias-variance trade-off explanation and mathematical derivation",
+          "Dimensionality reduction techniques (PCA, t-SNE)",
+          "Gradient descent mathematical proofs and convergence analysis",
+          "Feature engineering strategies for financial data",
+          "Model interpretability in production credit scoring systems"
+        ],
+        "key_insight": "DSA difficulty capped at arrays and string manipulation. Analytical focus shifts to ML theory explanation and statistical reasoning."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 30,
+      "primary_focus": "Behavioral and leadership assessment",
+      "specific_queries": [
+        "Leadership experiences and team management",
+        "Alignment with AMEX's customer-centric values",
+        "Long-term career aspirations in financial services"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Quantitative aptitude (CAT-level speed math)",
+      "Guesstimates and Fermi estimation",
+      "Business case studies (financial services domain)",
+      "Bayes' Theorem and probability fundamentals",
+      "Bias-variance trade-off",
+      "Dimensionality reduction (PCA, t-SNE)",
+      "Gradient descent convergence analysis"
+    ],
+    "recommended_resources": [
+      "Arun Sharma's CAT Quantitative Aptitude",
+      "Fifty Challenging Problems in Probability (Frederick Mosteller)",
+      "Communique handbook: The Guessing Game",
+      "KDAG CDC 101: Think Tank (probability section)"
+    ],
+    "estimated_prep_time_weeks": 5,
+    "dual_degree_advantage": "Dual Degree (B.Tech + M.Tech) candidates consistently receive preferential shortlisting for this role due to deeper research capability expectations."
+  }
+}

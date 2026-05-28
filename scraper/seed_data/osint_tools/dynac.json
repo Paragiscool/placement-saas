@@ -1,0 +1,47 @@
+{
+  "document_id": "doc_osint_tool_dynac_001",
+  "metadata": {
+    "source_type": "Open_Source_Repository",
+    "source_url": "https://github.com/metakgp/Dynac",
+    "extraction_date": "2026-05-28",
+    "managing_entity": "MetaKGP",
+    "license": "Open Source",
+    "confidence_score": 0.92
+  },
+  "tool_architecture": {
+    "tool_name": "Dynac",
+    "primary_function": "Dynamic CV Builder bypassing ERP portal restrictions",
+    "description": "The official ERP portal restricts CV modification, activating the CV-building module only during highly specific pre-internship and pre-placement windows. Dynac solves the problem of space management and the repeated necessity of updating the CV on the ERP just to view rendering changes. Effectively provides students with a CI/CD pipeline for their resumes.",
+    "technology_stack": [
+      "Python",
+      "Web technologies",
+      "iitkgp-erp-login-go (authentication dependency)"
+    ],
+    "deployment_methodology": "Local installation with ERP authentication bypass",
+    "notification_channels": [],
+    "operational_mechanics": {
+      "core_problem_solved": "ERP CV-building module only available during narrow pre-placement windows",
+      "key_features": [
+        "Continuous CV rendering without ERP window restrictions",
+        "Space management optimization for constrained ERP CV format",
+        "Dynamic resume updates based on real-time company intelligence",
+        "Bypass static constraints imposed by administration"
+      ],
+      "strategic_advantage": "Candidates can micro-optimize their resumes dynamically based on real-time intelligence gathered about specific visiting companies"
+    },
+    "dependencies": [
+      {
+        "name": "iitkgp-erp-login-go",
+        "function": "Automated ERP authentication bypassing mechanism",
+        "url": "https://github.com/metakgp/iitkgp-erp-login-go",
+        "description": "Provides automated authentication bypassing, acting as the foundational dependency for multiple downstream MetaKGP applications"
+      }
+    ],
+    "sub_modules": [],
+    "compliance_and_risk_warnings": [
+      "Bypasses official ERP portal restrictions",
+      "Depends on iitkgp-erp-login-go for authentication circumvention",
+      "Use may violate institutional ERP terms of service"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "document_id": "doc_osint_tool_mftp_001",
+  "metadata": {
+    "source_type": "Open_Source_Repository",
+    "source_url": "https://github.com/metakgp/mftp",
+    "extraction_date": "2026-05-28",
+    "managing_entity": "MetaKGP",
+    "license": "AGPL-3.0",
+    "confidence_score": 0.98
+  },
+  "tool_architecture": {
+    "tool_name": "mftp (My Freaking Training & Placements)",
+    "primary_function": "Automated CDC Noticeboard Scraper and Notification Forwarder",
+    "description": "The most critical asset within the MetaKGP repository. Functions as a relentless, automated scraper directed at the CDC noticeboard. Because the CDC releases highly time-sensitive notifications regarding company shortlists, OA links, and interview schedules, manual monitoring is highly inefficient. mftp containerizes scraping logic and polls CDC servers at extreme frequencies.",
+    "technology_stack": [
+      "Python (84.3%)",
+      "Shell scripting (14.5%)",
+      "Docker",
+      "Cronjobs",
+      "SMTP / Gmail API",
+      "ntfy protocol (push notifications)"
+    ],
+    "deployment_methodology": "docker-compose up -d / Cronjob Scheduling",
+    "notification_channels": [
+      "SMTP Email",
+      "Gmail API",
+      "ntfy push notifications"
+    ],
+    "operational_mechanics": {
+      "trigger_mechanism": "Detects DOM changes or new database entries on the CDC noticeboard",
+      "polling_frequency": "Extreme (configurable via cronjob intervals)",
+      "alert_types": [
+        "Company shortlist notifications",
+        "Online Assessment (OA) links",
+        "Interview schedule updates",
+        "Deadline reminders"
+      ]
+    },
+    "sub_modules": [
+      {
+        "name": "mftp-doctor",
+        "function": "Health-monitoring utility for the scraping engine. Alerts maintainers if the scraper crashes due to administrative countermeasures or server timeouts. Ensures continuous uptime during chaotic Phase 1 placement drives."
+      }
+    ],
+    "compliance_and_risk_warnings": [
+      "Utilizing the tool on a wide scale without the consent of the Placement Committee violates institutional policies",
+      "Documented risks include disciplinary action ranging from temporary suspension to permanent blacklisting from the CDC process",
+      "Repository explicitly issues warnings regarding its use",
+      "Exists in a legally and ethically ambiguous domain"
+    ]
+  }
+}

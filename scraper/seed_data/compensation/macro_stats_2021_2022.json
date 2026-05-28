@@ -1,0 +1,42 @@
+{
+  "document_id": "doc_stats_macro_2021_2022_001",
+  "metadata": {
+    "source_type": "Campus_Publication",
+    "source_url": "https://www.awaaziitkgp.in/intern-placement/placement-analysis-2021-2022",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2021-2022",
+    "data_validation_status": "Published_Campus_Media",
+    "confidence_score": 0.95
+  },
+  "macro_placement_context": {
+    "institute": "IIT Kharagpur",
+    "institute_phase": "Phase 1",
+    "phase_start_date": "December 1",
+    "total_institutional_offers": 1723,
+    "includes_ppo": true,
+    "highest_institutional_ctc_inr": 24000000,
+    "record_breaking_note": "Crossed the 1,000-offer threshold within the first five days of the drive, shattering previous records",
+    "top_volume_recruiters": [
+      "Honeywell",
+      "Microsoft",
+      "Google",
+      "Goldman Sachs",
+      "JP Morgan"
+    ],
+    "structural_trends": [
+      "Dual Degree candidates consistently secure higher stipends during internships and are aggressively targeted for deeper architectural roles",
+      "Massive migration from core engineering disciplines (Biotechnology, Metallurgy, Mining) to non-core sectors (IT, Product Management, Quant Finance)",
+      "Core placement figures for Biotechnology, Metallurgy, and Mining departments approach zero unless candidates pursue higher studies",
+      "Students in non-CS disciplines self-educate in Data Structures and Algorithms (DSA) to compete for SDE roles"
+    ],
+    "sector_distribution": {
+      "information_technology": "Dominant hiring sector",
+      "financial_services": "Second largest (Goldman Sachs, JP Morgan, AMEX)",
+      "consulting": "Growing (McKinsey, BCG, Bain visits)",
+      "core_engineering": "Declining year-over-year",
+      "product_management": "Emerging category"
+    },
+    "data_source_methodology": "Combination of RTI (Right to Information) petitions, Awaaz campus publication analysis, and crowd-sourced Google Sheets aggregated by the student body via OCR pipelines applied to low-resolution PDF scans provided by the administration"
+  },
+  "specific_compensation_data": null
+}

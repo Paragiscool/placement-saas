@@ -1,0 +1,39 @@
+{
+  "document_id": "doc_stats_compensation_quantsapp_001",
+  "metadata": {
+    "source_type": "Professional_Forum",
+    "source_url": "https://leetcode.com/discuss/compensation/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2023-2024",
+    "data_validation_status": "Verified_User_Report",
+    "confidence_score": 0.88
+  },
+  "macro_placement_context": null,
+  "specific_compensation_data": {
+    "company_name": "Quantsapp",
+    "role_title": "Python Developer",
+    "location": "India",
+    "candidate_background": "Dual Degree (B.Tech + M.Tech) Mechanical Engineering, IIT Kharagpur",
+    "offer_status": "Accepted",
+    "financial_breakdown_inr": {
+      "base_salary_annual": 960000,
+      "base_salary_monthly": 80000,
+      "target_performance_bonus": 0,
+      "signing_bonus_one_time": 0,
+      "relocation_bonus_one_time": 0
+    },
+    "equity_breakdown": {
+      "rsu_grant_usd": 0,
+      "vesting_schedule_years": 0,
+      "vesting_pattern": "No equity component"
+    },
+    "calculated_totals_inr": {
+      "year_1_total_approx": 960000,
+      "year_2_total_approx": 960000,
+      "year_3_total_approx": 960000,
+      "year_4_total_approx": 960000,
+      "notes": "Flat base salary with absolute zero equity, signing bonuses, or performance variables. Excludes standard annual raises."
+    },
+    "key_insight": "Represents the startup/domestic firm compensation archetype. Students must strategically evaluate high-base/low-equity roles vs high-equity roles requiring multi-year retention to realize advertised financial gains. A Dual Degree Mechanical Engineering graduate in a non-core role."
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "document_id": "doc_interview_salesforce_sde_001",
+  "metadata": {
+    "source_type": "Professional_Forum",
+    "source_url": "https://leetcode.com/discuss/interview-experience/480991/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.90
+  },
+  "entity": {
+    "company_name": "Salesforce",
+    "role_title": "SDE Intern",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics"],
+    "hiring_volume": "Moderate (10-20 offers)",
+    "compensation_tier": "Top-tier"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "HackerRank (Kula 101 Assessment)",
+      "duration_minutes": 75,
+      "total_questions": 3,
+      "core_topics_tested": [
+        "State-space optimization",
+        "BFS / Graph traversals",
+        "Dynamic data structure design"
+      ],
+      "difficulty_rating": "Hard",
+      "notes": "The Kula 101 assessment is Salesforce's standardized screening tool. Questions emphasize optimization of standard algorithms rather than brute-force implementation."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Technical Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Algorithm optimization and state-space reduction",
+        "specific_queries": [
+          "Word Ladder problem (standard BFS) with requirement to optimize into Two-Way BFS on the fly",
+          "Mitigate combinatorial explosion through bidirectional search",
+          "Analyze and prove time complexity improvement from O(b^d) to O(b^(d/2))"
+        ],
+        "environment": "Whiteboard / Online IDE",
+        "key_insight": "Candidates are expected to recognize optimization opportunities in standard problems without being prompted. The leap from one-way to two-way BFS must be self-initiated."
+      },
+      {
+        "round_sequence": 2,
+        "round_type": "Technical Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Dynamic data structure design",
+        "specific_queries": [
+          "Engineer a system using multi-map configurations",
+          "Support specific query operations: Set, Count, Delete",
+          "Maintain O(1) or O(log n) time complexities for all operations",
+          "Discuss trade-offs between hash-based and tree-based backing structures"
+        ],
+        "environment": "Whiteboard / Online IDE",
+        "key_insight": "Tests ability to design custom data structures from scratch rather than applying known patterns. Focus on operational complexity guarantees."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 30,
+      "primary_focus": "Behavioral and Cultural Fit",
+      "specific_queries": [
+        "Leadership experiences",
+        "Conflict resolution examples",
+        "Alignment with Salesforce's Ohana culture"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Two-Way BFS / Bidirectional Search",
+      "Word Ladder and graph traversal optimization",
+      "Multi-map / composite data structure design",
+      "Time complexity analysis and mathematical proofs",
+      "State-space optimization techniques"
+    ],
+    "recommended_resources": [
+      "LeetCode Salesforce-tagged problems",
+      "Graph algorithm optimization literature",
+      "Data structure design problems (LeetCode Hard)"
+    ],
+    "estimated_prep_time_weeks": 5
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "document_id": "doc_stats_compensation_google_001",
+  "metadata": {
+    "source_type": "Professional_Forum",
+    "source_url": "https://leetcode.com/discuss/compensation/4653762/Google-or-SWE-L4-or-Bengaluru-or-Accepted-or-Prior-Experience-of-3-Years-at-Microsoft/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2023-2024",
+    "data_validation_status": "Verified_User_Report",
+    "confidence_score": 0.92
+  },
+  "macro_placement_context": {
+    "institute": "IIT Kharagpur",
+    "institute_phase": "Phase 1",
+    "phase_start_date": "December 1",
+    "total_institutional_offers": 1723,
+    "highest_institutional_ctc_inr": 24000000,
+    "record_breaking_note": "Shattered previous records by crossing the 1,000-offer threshold within the first five days of the drive",
+    "top_volume_recruiters": [
+      "Honeywell (34 offers)",
+      "Microsoft",
+      "Google",
+      "Amazon"
+    ],
+    "structural_trends": [
+      "Dual Degree (B.Tech + M.Tech) candidates consistently secure higher stipends during internships",
+      "Dual Degree candidates aggressively targeted for roles requiring deeper architectural understanding",
+      "Massive migration of talent from core engineering (Biotechnology, Metallurgy, Mining) into non-core sectors (IT, Product Management, Quant Finance)",
+      "Core placement figures for non-CS departments approach zero unless candidate pursues higher studies",
+      "Students in non-CS disciplines self-educate in DSA to compete for SDE roles"
+    ]
+  },
+  "specific_compensation_data": {
+    "company_name": "Google",
+    "role_title": "SWE3 (L4)",
+    "location": "Bengaluru",
+    "candidate_background": "B.Tech IIT Kharagpur, 3 Years Prior Experience at Microsoft",
+    "offer_status": "Accepted",
+    "financial_breakdown_inr": {
+      "base_salary_annual": 3800000,
+      "target_performance_bonus": 570000,
+      "performance_bonus_percentage": 15,
+      "signing_bonus_one_time": 500000,
+      "relocation_bonus_one_time": 500000
+    },
+    "equity_breakdown": {
+      "rsu_grant_usd": 95000,
+      "vesting_schedule_years": 4,
+      "vesting_pattern": "Standard 4-year vesting"
+    },
+    "calculated_totals_inr": {
+      "year_1_total_approx": 8550000,
+      "year_2_total_approx": 6342500,
+      "year_3_total_approx": 5842500,
+      "year_4_total_approx": 5342500,
+      "notes": "Year 1 inflated by signing and relocation bonuses. Exhaustion of one-time bonuses causes compensation to taper from ~85.5L to ~53.4L by year 4."
+    },
+    "key_insight": "Media sensationalizes highest CTC numbers without contextualizing the underlying financial architecture. The gap between headline CTC and actual liquid base salary is massive due to equity vesting and one-time bonuses."
+  }
+}

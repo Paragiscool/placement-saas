@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { PrepResource } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ExternalLink, BookOpen, Zap, BarChart3, Users } from 'lucide-react'
+import { X, ExternalLink, BookOpen, Zap, BarChart3, Users, MessageSquare, Send, ArrowLeft } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
 interface PrepModalProps {
   companyName: string
@@ -20,6 +21,12 @@ const DIFFICULTY_COLOR = {
 export default function PrepModal({ companyName, onClose }: PrepModalProps) {
   const [data, setData] = useState<PrepResource | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showChat, setShowChat] = useState(false)
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([
+    { role: 'assistant', text: `Hi! I'm your guiding senior for ${companyName}. Ask me anything about their interview process, compensation, or preparation strategy.` }
+  ])
+  const [chatInput, setChatInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -44,6 +51,33 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
   const googleSearch = `https://www.google.com/search?q=${encodeURIComponent(companyName + ' interview questions experience')}`
   const linkedInUrl  = `https://www.linkedin.com/company/${encodeURIComponent(companyName.toLowerCase().replace(/\s+/g, '-'))}`
 
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!chatInput.trim()) return
+
+    const userMessage = chatInput
+    setChatMessages(prev => [...prev, { role: 'user', text: userMessage }])
+    setChatInput('')
+    setIsChatLoading(true)
+
+    try {
+      const res = await fetch('http://localhost:8000/api/rag-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: userMessage,
+          company_filter: companyName
+        })
+      })
+      const data = await res.json()
+      setChatMessages(prev => [...prev, { role: 'assistant', text: data.answer || data.error || 'Failed to get a response.' }])
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'assistant', text: 'Error connecting to the backend.' }])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
+
   return (
     <AnimatePresence>
       {/* Backdrop */}
@@ -66,10 +100,26 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
           {/* Header */}
           <div className="sticky top-0 glass border-b border-glass-border p-5 flex items-start justify-between z-10">
             <div>
-              <h2 className="text-xl font-bold text-white">
-                🚀 Roadmap to Crack <span className="text-neon">{companyName}</span>
-              </h2>
-              <p className="text-sm text-slate-400 mt-0.5">Company-specific interview intelligence</p>
+              {showChat ? (
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setShowChat(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 border border-transparent hover:border-glass-border text-slate-400 hover:text-white transition-all">
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <div>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      🤖 Chat with <span className="text-neon">Senior</span>
+                    </h2>
+                    <p className="text-sm text-slate-400 mt-0.5">Powered by RAG Intelligence</p>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    🚀 Roadmap to Crack <span className="text-neon">{companyName}</span>
+                  </h2>
+                  <p className="text-sm text-slate-400 mt-0.5">Company-specific interview intelligence</p>
+                </div>
+              )}
             </div>
             <button
               onClick={onClose}
@@ -80,7 +130,50 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
           </div>
 
           <div className="p-5 space-y-5">
-            {loading ? (
+            {showChat ? (
+              <div className="flex flex-col h-[50vh] min-h-[400px]">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] rounded-2xl p-4 text-sm ${msg.role === 'user' ? 'bg-neon/20 border border-neon/30 text-white rounded-br-none' : 'bg-white/5 border border-glass-border text-slate-300 rounded-bl-none'}`}>
+                        {msg.role === 'assistant' ? (
+                          <div className="prose prose-invert prose-sm max-w-none">
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          msg.text
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white/5 border border-glass-border text-slate-400 rounded-2xl rounded-bl-none p-4 text-sm flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-neon rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 bg-neon rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 bg-neon rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <form onSubmit={handleChatSubmit} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask about rounds, compensation, tips..."
+                    className="flex-1 bg-black/40 border border-glass-border rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-neon/50 transition-all"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isChatLoading || !chatInput.trim()}
+                    className="bg-neon text-black px-4 py-2.5 rounded-xl hover:bg-neon/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
+            ) : loading ? (
               <div className="space-y-3">
                 {[1,2,3].map((i) => <div key={i} className="skeleton h-6 rounded-lg" />)}
               </div>
@@ -172,7 +265,7 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
                       {Object.entries(data.prep_links).map(([label, url]) => (
                         <a
                           key={label}
-                          href={url}
+                          href={url as string}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 bg-white/5 border border-glass-border hover:border-neon/30 hover:bg-neon/5 text-slate-300 hover:text-neon text-sm px-3 py-2.5 rounded-lg transition-all group"
@@ -209,16 +302,24 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
             )}
 
             {/* Footer actions */}
-            <div className="pt-2 border-t border-glass-border flex gap-2">
-              <a href={googleSearch} target="_blank" rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 bg-neon/10 border border-neon/30 text-neon text-sm py-2 rounded-lg hover:bg-neon/20 transition-all">
-                <ExternalLink className="w-3.5 h-3.5" /> More Resources
-              </a>
-              <a href={linkedInUrl} target="_blank" rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-glass-border text-slate-300 text-sm py-2 rounded-lg hover:bg-white/10 transition-all">
-                💼 Company LinkedIn
-              </a>
-            </div>
+            {!showChat && (
+              <div className="pt-2 border-t border-glass-border flex flex-wrap gap-2">
+                <button 
+                  onClick={() => setShowChat(true)}
+                  className="flex-[2] min-w-[200px] flex items-center justify-center gap-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-sm py-2 rounded-lg hover:bg-purple-500/20 transition-all font-medium"
+                >
+                  <MessageSquare className="w-4 h-4" /> Ask Guiding Senior
+                </button>
+                <a href={googleSearch} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 min-w-[120px] flex items-center justify-center gap-2 bg-neon/10 border border-neon/30 text-neon text-sm py-2 rounded-lg hover:bg-neon/20 transition-all">
+                  <ExternalLink className="w-3.5 h-3.5" /> More
+                </a>
+                <a href={linkedInUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 min-w-[120px] flex items-center justify-center gap-2 bg-white/5 border border-glass-border text-slate-300 text-sm py-2 rounded-lg hover:bg-white/10 transition-all">
+                  💼 LinkedIn
+                </a>
+              </div>
+            )}
           </div>
         </motion.div>
       </motion.div>

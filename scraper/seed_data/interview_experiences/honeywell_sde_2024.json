@@ -1,0 +1,68 @@
+{
+  "document_id": "doc_interview_honeywell_sde_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://codeclub-iitkgp.medium.com/",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.90
+  },
+  "entity": {
+    "company_name": "Honeywell",
+    "role_title": "SDE Intern",
+    "target_departments": ["Computer Science", "Electronics", "Electrical", "Mechanical"],
+    "hiring_volume": "High-volume (up to 34 offers in a single phase)",
+    "compensation_tier": "Mid-tier"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "HackerRank",
+      "duration_minutes": 60,
+      "total_questions": 3,
+      "core_topics_tested": [
+        "Basic sorting logic",
+        "Elementary graph traversals",
+        "Array manipulation"
+      ],
+      "difficulty_rating": "Easy-Medium",
+      "notes": "Pipeline optimized for speed over depth. OA is designed to filter at scale, not test extreme algorithmic capability."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Unified Technical + HR Round",
+        "duration_minutes": 45,
+        "primary_focus": "Rapid practical implementation and lateral thinking",
+        "specific_queries": [
+          "5 rapid-fire medium-level array manipulation questions",
+          "Linked-list manipulation problems",
+          "Abstract brain-teaser puzzles to test lateral thinking under pressure",
+          "Deep dive into candidate's development portfolio (ReactJS projects, C++ systems)"
+        ],
+        "environment": "Standard interview setting",
+        "key_insight": "Honeywell merges technical and HR evaluations into a single unified round. Differentiates candidates based on tangible development portfolios rather than pure algorithmic theory."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 0,
+      "primary_focus": "Merged with technical round",
+      "specific_queries": []
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "Array and linked-list manipulation (medium difficulty)",
+      "Basic sorting algorithms",
+      "Elementary graph traversals (BFS, DFS)",
+      "Brain teasers and lateral thinking puzzles",
+      "ReactJS project portfolio",
+      "C++ systems programming projects"
+    ],
+    "recommended_resources": [
+      "LeetCode Easy-Medium tagged problems",
+      "Build verifiable ReactJS or C++ projects before the interview"
+    ],
+    "estimated_prep_time_weeks": 3,
+    "key_differentiator": "Candidates possessing verifiable projects built in ReactJS or low-level systems in C++ are heavily favored. These skills allow immediate integration into Honeywell's industrial automation software frameworks without extensive onboarding."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "document_id": "doc_interview_sprinklr_sde_001",
+  "metadata": {
+    "source_type": "Campus_Publication_Blog",
+    "source_url": "https://medium.com/@swgiitkgp/foresight-2024-internship-at-sprinklr-debaditya-das-3c4bc5f12450",
+    "extraction_date": "2026-05-28",
+    "academic_year": "2024",
+    "confidence_score": 0.95
+  },
+  "entity": {
+    "company_name": "Sprinklr",
+    "role_title": "Product Development Intern / SDE",
+    "target_departments": ["Computer Science", "Electronics", "Mathematics"],
+    "hiring_volume": "Selective (< 10 offers typically)",
+    "compensation_tier": "Top-tier"
+  },
+  "assessment_pipeline": {
+    "online_assessment": {
+      "platform": "Custom / HackerRank",
+      "duration_minutes": 90,
+      "total_questions": 3,
+      "core_topics_tested": [
+        "Binary Search optimizations",
+        "Dynamic Programming (DP)",
+        "Complex Graph/Tree traversals"
+      ],
+      "difficulty_rating": "Hard",
+      "notes": "Represents the zenith of algorithmic difficulty within the standard Big Tech recruiting cohort at IIT KGP. Designed to induce extreme cognitive load."
+    },
+    "technical_rounds": [
+      {
+        "round_sequence": 1,
+        "round_type": "Technical Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Data Structures Internals and Advanced Algorithmic Modeling",
+        "specific_queries": [
+          "Red-Black Tree implementation of std::map vs Hash Table implementation of std::unordered_map",
+          "Design of custom Hash Functions, specifically Rolling Hashes",
+          "2-sum problem systematically constrained until candidate must architect a 5-sum Dynamic Programming solution",
+          "Rigorous mathematical proofs for space and time complexities of the 5-sum DP solution"
+        ],
+        "environment": "Google Doc (blank, no IDE)",
+        "key_insight": "Interviewers probe internal memory architecture of the STL. Candidates must explain implementations, not just usage."
+      },
+      {
+        "round_sequence": 2,
+        "round_type": "Technical Interview",
+        "duration_minutes": 60,
+        "primary_focus": "Object-Oriented Programming and Core Systems",
+        "specific_queries": [
+          "Deep OOP paradigms: polymorphism and inheritance mechanics",
+          "Operating Systems architecture fundamentals",
+          "Hardware-level memory management: operational discrepancies between L1 and L2 caching mechanisms",
+          "Live coding: implement a fully functional Least Recently Used (LRU) Cache from scratch in a text editor"
+        ],
+        "environment": "Text editor (no IDE assistance)",
+        "key_insight": "Aggressive pivot from algorithmic theory to systems-level understanding. Tests breadth across the full CS stack."
+      }
+    ],
+    "hr_round": {
+      "duration_minutes": 20,
+      "primary_focus": "Cultural Alignment",
+      "specific_queries": [
+        "Motivation for joining Sprinklr",
+        "Team collaboration experiences",
+        "Long-term career alignment"
+      ]
+    }
+  },
+  "preparation_strategy": {
+    "critical_topics": [
+      "STL internals (Red-Black Trees, Hash Tables)",
+      "Rolling Hash functions",
+      "Multi-sum DP variants (2-sum through 5-sum)",
+      "LRU Cache implementation",
+      "L1/L2 cache architecture",
+      "OOP deep dive (polymorphism, inheritance, virtual dispatch)"
+    ],
+    "recommended_resources": [
+      "CodeClub IIT KGP Medium publications",
+      "SWG Foresight interview chronicles"
+    ],
+    "estimated_prep_time_weeks": 6
+  }
+}

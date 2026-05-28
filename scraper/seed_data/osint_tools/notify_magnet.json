@@ -1,0 +1,50 @@
+{
+  "document_id": "doc_osint_tool_notify_magnet_001",
+  "metadata": {
+    "source_type": "Open_Source_Repository",
+    "source_url": "https://github.com/XylenSky/notify-magnet",
+    "extraction_date": "2026-05-28",
+    "managing_entity": "Independent Student Developer (XylenSky)",
+    "license": "Open Source",
+    "confidence_score": 0.90
+  },
+  "tool_architecture": {
+    "tool_name": "notify-magnet",
+    "primary_function": "LAN-based Push Notification System for CDC Updates",
+    "description": "Engineered to bypass reliance on external servers and mitigate the risk of third-party data interception during highly confidential placement communications. Operates exclusively over the Local Area Network (LAN) using customized IP protocols to deliver push notifications directly to student mobile devices.",
+    "technology_stack": [
+      "Python",
+      "LAN networking protocols",
+      "Custom IP routing (e.g., http://10.105.34.28)",
+      "Push notification framework"
+    ],
+    "deployment_methodology": "LAN-only deployment within IIT KGP campus network",
+    "notification_channels": [
+      "LAN-based push notifications to mobile devices"
+    ],
+    "operational_mechanics": {
+      "trigger_mechanism": "Monitors CDC updates and segregates into distinct channels",
+      "notification_channels_detail": [
+        {
+          "channel_name": "Internships",
+          "description": "Internship-specific CDC notifications"
+        },
+        {
+          "channel_name": "Placements",
+          "description": "Full-time placement notifications"
+        },
+        {
+          "channel_name": "Errors",
+          "description": "System error alerts for maintainers"
+        }
+      ],
+      "scheduling_algorithm": "Pushes critical reminders precisely thirty minutes prior to CDC deadlines",
+      "security_advantage": "No data leaves the campus LAN, eliminating third-party interception risk"
+    },
+    "sub_modules": [],
+    "compliance_and_risk_warnings": [
+      "Operates within campus LAN reducing external exposure",
+      "Still subject to institutional policies regarding automated CDC access"
+    ]
+  }
+}
