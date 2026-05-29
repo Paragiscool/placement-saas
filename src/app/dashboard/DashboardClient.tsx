@@ -5,9 +5,10 @@ import Topbar from '@/components/layout/Topbar'
 import JobTable from '@/components/dashboard/JobTable'
 import CategoryCards from '@/components/dashboard/CategoryCards'
 import ChartsSection from '@/components/dashboard/ChartsSection'
+import ProgressSection from '@/components/dashboard/ProgressSection'
 import type { Job } from '@/types'
 
-export default function DashboardClient({ initialJobs }: { initialJobs: Job[] }) {
+export default function DashboardClient({ initialJobs, initialInterviews = [] }: { initialJobs: Job[], initialInterviews?: any[] }) {
   const [activeCategory, setActiveCategory] = useState<string>('all')
 
   return (
@@ -25,6 +26,11 @@ export default function DashboardClient({ initialJobs }: { initialJobs: Job[] })
             Includes CTC data, application windows, and personalised tracking backed by Supabase.
           </p>
         </section>
+
+        {/* Progress Section */}
+        {initialInterviews.length > 0 && (
+          <ProgressSection interviews={initialInterviews} />
+        )}
 
         {/* Analytics Charts */}
         <ChartsSection jobs={initialJobs} />

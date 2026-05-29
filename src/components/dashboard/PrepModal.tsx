@@ -61,7 +61,8 @@ export default function PrepModal({ companyName, onClose }: PrepModalProps) {
     setIsChatLoading(true)
 
     try {
-      const res = await fetch('http://localhost:8000/api/rag-query', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_BASE}/api/rag-query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,7 +1,8 @@
 import os
 import json
+import uvicorn
 from typing import Optional, List
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client
@@ -13,9 +14,15 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)),
 
 app = FastAPI()
 
+frontend_url = os.getenv("FRONTEND_URL")
+origins = ["http://localhost:3000", "http://127.0.0.1:3000", "https://placement-saas-three.vercel.app"]
+if frontend_url:
+    origins.append(frontend_url)
+origins.append("*") # Temporary fallback for initial deployment
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://placement-saas-three.vercel.app"], 
+    allow_origins=origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,9 +44,24 @@ class ChatRequest(BaseModel):
     interview_id: Optional[str] = None
     history: Optional[list] = None
 
-@app.post("/api/chat")
-async def chat_with_ai(request: ChatRequest):
+def get_user_id_from_token(authorization: Optional[str]) -> str:
+    """Verifies JWT with Supabase and returns the user_id (UUID string)."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return "00000000-0000-0000-0000-000000000000"
+    token = authorization.split(" ")[1]
     try:
+        user_resp = supabase.auth.get_user(token)
+        if user_resp and user_resp.user:
+            return user_resp.user.id
+    except Exception:
+        pass
+    return "00000000-0000-0000-0000-000000000000"
+
+@app.post("/api/chat")
+async def chat_with_ai(request: ChatRequest, authorization: Optional[str] = Header(None)):
+    try:
+        # Securely get user_id from token, overriding client's request.user_id
+        request.user_id = get_user_id_from_token(authorization)
         # Step 1: Direct lookup for job context
         response = supabase.table("job_embeddings").select("content").eq("job_id", request.job_id).execute()
         if not response.data:
@@ -133,8 +155,10 @@ class ScorecardResult(BaseModel):
     final_verdict: str
 
 @app.post("/api/scorecard")
-async def generate_scorecard(request: ScorecardRequest):
+async def generate_scorecard(request: ScorecardRequest, authorization: Optional[str] = Header(None)):
     try:
+        # Securely get user_id from token
+        request.user_id = get_user_id_from_token(authorization)
         # 1. Format the transcript into a single string for the AI to read
         transcript_text = "\n".join([f"{msg.role.upper()}: {msg.content}" for msg in request.messages])
         
@@ -317,4 +341,7 @@ async def rag_stats():
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
 

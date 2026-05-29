@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Target, Brain, MessageSquare, Play } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Message {
   role: "user" | "ai";
@@ -31,6 +32,7 @@ interface Scorecard {
 }
 
 export default function InterviewRoom() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -92,9 +94,16 @@ export default function InterviewRoom() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/api/chat", {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ 
           message: userMsg,
           user_id: userId,
@@ -133,9 +142,16 @@ export default function InterviewRoom() {
       if (interviewId) body.interview_id = interviewId;
       if (userId) body.user_id = userId;
 
-      const response = await fetch("http://localhost:8000/api/scorecard", {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/api/scorecard`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(body),
       });
       const data = await response.json();
@@ -166,9 +182,9 @@ export default function InterviewRoom() {
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-neon/20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 blur-[120px] rounded-full pointer-events-none" />
         
-        <Link href="/" className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+        <button onClick={() => router.push('/')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
+        </button>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -221,9 +237,10 @@ export default function InterviewRoom() {
       {/* Header */}
       <header className="glass border-b border-glass-border px-6 py-4 flex items-center justify-between z-10 sticky top-0">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
             <ArrowLeft className="w-5 h-5" />
-          </Link>
+            <span className="text-sm font-semibold hidden md:inline">Exit Interview</span>
+          </button>
           <div>
             <h1 className="text-lg font-bold text-white flex items-center gap-2">
               Mock Interview Room
@@ -393,6 +410,16 @@ export default function InterviewRoom() {
                       </ul>
                     </div>
                   </div>
+                </div>
+
+                {/* Return to Dashboard Button */}
+                <div className="bg-black/20 p-6 flex justify-center border-t border-glass-border">
+                  <button 
+                    onClick={() => router.push('/')} 
+                    className="bg-neon text-black hover:bg-neon/90 px-8 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all flex items-center gap-2"
+                  >
+                    <ArrowLeft className="w-5 h-5" /> Return to Dashboard
+                  </button>
                 </div>
               </div>
             </motion.div>
