@@ -28,7 +28,7 @@ supabase = create_client(os.getenv("NEXT_PUBLIC_SUPABASE_URL"), os.getenv("SUPAB
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # 3. LLM for the actual chat (LangChain is fine for this part)
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7) 
+llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0.7) 
 
 class ChatRequest(BaseModel):
     message: str
@@ -117,9 +117,11 @@ class TranscriptMessage(BaseModel):
     role: str
     content: str
 
-class EvaluationRequest(BaseModel):
+class ScorecardRequest(BaseModel):
     messages: List[TranscriptMessage]
     job_context: str # e.g., "Google SDE L4"
+    interview_id: Optional[str] = None
+    user_id: Optional[str] = None
 
 # What Gemini will return to us
 class ScorecardResult(BaseModel):
@@ -130,8 +132,8 @@ class ScorecardResult(BaseModel):
     areas_for_improvement: List[str]
     final_verdict: str
 
-@app.post("/api/evaluate")
-async def evaluate_interview(request: EvaluationRequest):
+@app.post("/api/scorecard")
+async def generate_scorecard(request: ScorecardRequest):
     try:
         # 1. Format the transcript into a single string for the AI to read
         transcript_text = "\n".join([f"{msg.role.upper()}: {msg.content}" for msg in request.messages])
@@ -146,7 +148,7 @@ async def evaluate_interview(request: EvaluationRequest):
         2. Communication (Clarity, structure, not rambling)
         3. Problem Solving (Handling edge cases, adapting to hints)
         
-        Provide 2 specific strengths, 2 specific areas for improvement, and a final verdict (e.g., 'Strong Hire', 'Lean Hire', 'No Hire').
+        Provide 2-3 specific strengths, 2-3 specific areas for improvement, and a final verdict (e.g., 'Strong Hire', 'Lean Hire', 'No Hire').
         You must be highly critical. Do not give 10/10 unless the candidate was flawless.
         
         TRANSCRIPT:
@@ -155,7 +157,7 @@ async def evaluate_interview(request: EvaluationRequest):
 
         # 3. Call Gemini, forcing it to return the exact Pydantic JSON structure
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash", # Flash is perfect and fast for this
+            model_name="gemini-3.1-flash-lite", # Flash is perfect and fast for this
             generation_config=genai.GenerationConfig(
                 response_mime_type="application/json",
                 response_schema=ScorecardResult,
@@ -165,65 +167,21 @@ async def evaluate_interview(request: EvaluationRequest):
         
         response = model.generate_content(system_prompt)
         
-        # 4. Parse the JSON and return it to the Next.js frontend
+        # 4. Parse the JSON
         scorecard = json.loads(response.text)
+        
+        # 5. Save to Supabase (if interview_id provided)
+        if request.interview_id:
+            transcript_dicts = [{"role": m.role, "content": m.content} for m in request.messages]
+            supabase.table("mock_interviews").update({
+                "scorecard": scorecard,
+                "transcript": transcript_dicts
+            }).eq("id", request.interview_id).execute()
+
         return {"status": "success", "scorecard": scorecard}
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-
-class ScorecardRequest(BaseModel):
-    interview_id: Optional[str] = None
-    transcript: Optional[list] = None
-
-@app.post("/api/scorecard")
-async def generate_scorecard(request: ScorecardRequest):
-    try:
-        if request.interview_id:
-            int_resp = supabase.table("mock_interviews").select("transcript").eq("id", request.interview_id).execute()
-            if not int_resp.data:
-                return {"error": "Interview not found"}
-            transcript = int_resp.data[0]["transcript"]
-        else:
-            transcript = request.transcript or []
-
-        if not transcript:
-            return {"error": "No transcript provided"}
-        
-        history_text = ""
-        for msg in transcript:
-            role_name = "Junior" if msg["role"] == "user" else "Senior"
-            history_text += f"{role_name}: {msg['content']}\n"
-            
-        scorecard_prompt = f"""
-        You are an expert technical interviewer evaluating a mock interview transcript.
-        Generate a scorecard in JSON format with the following keys:
-        - technical_depth (string, e.g., '8/10')
-        - communication (string, e.g., '7/10')
-        - feedback (string, a paragraph of actionable feedback)
-        
-        Transcript:
-        {history_text}
-        
-        Return ONLY valid JSON, no markdown formatting.
-        """
-        
-        eval_response = llm.invoke(scorecard_prompt)
-        
-        try:
-            scorecard_text = eval_response.content.strip().replace("```json", "").replace("```", "")
-            scorecard_data = json.loads(scorecard_text)
-        except Exception:
-            scorecard_data = {"error": "Failed to parse JSON", "raw": eval_response.content}
-            
-        if request.interview_id:
-            supabase.table("mock_interviews").update({"scorecard": scorecard_data}).eq("id", request.interview_id).execute()
-        
-        return scorecard_data
-        
-    except Exception as e:
-        return {"error": str(e)}
 
 
 # ==========================================================================
