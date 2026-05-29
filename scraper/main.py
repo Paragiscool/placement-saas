@@ -57,6 +57,11 @@ def get_user_id_from_token(authorization: Optional[str]) -> str:
         pass
     return "00000000-0000-0000-0000-000000000000"
 
+@app.get("/")
+async def root_health_check():
+    """Default health check for Render to prevent 404s on the root path."""
+    return {"status": "ok", "message": "Placement SaaS API is running securely."}
+
 @app.post("/api/chat")
 async def chat_with_ai(request: ChatRequest, authorization: Optional[str] = Header(None)):
     try:
