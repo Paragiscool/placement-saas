@@ -14,11 +14,16 @@ export const metadata: Metadata = {
   keywords: ['IIT KGP', 'placements', 'jobs', 'internship', 'CTC', 'dashboard'],
 }
 
+import Navbar from "@/components/Navbar"
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans bg-[#0a0f1e] text-slate-100 antialiased`}>
-        {children}
+      <body className={`${inter.variable} font-sans bg-[#0a0f1e] text-slate-100 antialiased min-h-screen flex flex-col`}>
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
       </body>
     </html>
   )
