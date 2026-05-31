@@ -31,19 +31,19 @@ export default function CompensationChart() {
         const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const response = await fetch(`${API_BASE}/api/analytics`);
         if (!response.ok) throw new Error("Failed to fetch");
-        const result = await response.json();
+        const rawData = await response.json();
         
-        if (result.data) {
+        if (rawData.data) {
           // 1. Sanitize, Trim, and Convert the Data
           const cleanDataMap = new Map();
 
-          result.data.forEach((item: any) => {
+          rawData.data.forEach((item: any) => {
             // Remove trailing/leading spaces from the department name
             const cleanDept = item.department ? item.department.trim() : "Unknown";
             
-            // Force strings to Numbers (fallback to 0 if NaN)
-            const medCtc = Number(item.median_ctc) || 0;
-            const maxCtc = Number(item.max_ctc) || 0;
+            // Force to Number, fallback to 0, and immediately convert to Lakhs (LPA)
+            const medCtc = (Number(item.median_ctc) || 0) / 100000; 
+            const maxCtc = (Number(item.max_ctc) || 0) / 100000;
 
             if (cleanDataMap.has(cleanDept)) {
               // If we already have this department, update the max and average the medians (or keep highest)
@@ -52,7 +52,7 @@ export default function CompensationChart() {
               existing.median_ctc = (existing.median_ctc + medCtc) / 2; // Simple merge
             } else {
               cleanDataMap.set(cleanDept, {
-                name: cleanDept,
+                department: cleanDept,
                 median_ctc: medCtc,
                 max_ctc: maxCtc,
               });
@@ -61,6 +61,7 @@ export default function CompensationChart() {
 
           // 2. Convert map back to array and feed to chart (limit to top 10 for clean UI)
           const finalData = Array.from(cleanDataMap.values()).slice(0, 10);
+          console.log("FINAL CHART DATA:", finalData);
           setData(finalData);
         }
       } catch (err: any) {
@@ -96,51 +97,35 @@ export default function CompensationChart() {
       <p className="text-slate-400 text-sm mb-6 relative z-10">Real-time Median vs Max CTC aggregated across active roles</p>
       
       <div className="w-full h-[320px] relative z-10">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" vertical={false} />
+        <ResponsiveContainer width="100%" height={400}>
+          {/* Added a left margin of 20 to push the chart away from the screen edge */}
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+            
             <XAxis 
-              dataKey="name" 
-              stroke="#94a3b8" 
-              fontSize={11}
-              tickLine={false}
-              axisLine={false}
+              dataKey="department" 
+              stroke="#9ca3af" 
+              fontSize={12} 
+              tickMargin={10} 
             />
+            
+            {/* Explicitly setting width={60} gives the labels room to render without chopping */}
             <YAxis 
-              stroke="#6b7280" 
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(value) => `₹${value / 100000}L`}
+              width={60} 
+              tickFormatter={(value) => `₹${value}L`} 
+              stroke="#9ca3af" 
+              fontSize={12} 
             />
-            <Tooltip
-              cursor={{ fill: '#ffffff0a' }}
-              contentStyle={{
-                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: '#fff',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
-              }}
+            
+            <Tooltip 
+              cursor={{ fill: '#1f2937' }}
+              contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', color: '#f3f4f6' }}
+              formatter={(value: number) => [`₹${value.toFixed(1)} LPA`, '']}
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            <Bar 
-              dataKey="median_ctc" 
-              name="Median CTC (LPA)"
-              fill="#06b6d4" 
-              radius={[4, 4, 0, 0]} 
-              barSize={20} 
-            />
-            <Bar 
-              dataKey="max_ctc" 
-              name="Max CTC (LPA)"
-              fill="#a855f7" 
-              radius={[4, 4, 0, 0]} 
-              barSize={20} 
-            />
+            <Legend wrapperStyle={{ paddingTop: '20px' }}/>
+            
+            <Bar dataKey="max_ctc" name="Max CTC (LPA)" fill="#a855f7" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="median_ctc" name="Median CTC (LPA)" fill="#06b6d4" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
