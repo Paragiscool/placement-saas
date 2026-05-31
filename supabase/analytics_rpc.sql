@@ -9,14 +9,14 @@ BEGIN
   SELECT json_agg(t) INTO result
   FROM (
     SELECT 
-      COALESCE(category, 'Other') as department,
-      COALESCE(category_group, 'General') as role_type,
+      TRIM(COALESCE(category, 'Other')) as department,
+      TRIM(COALESCE(category_group, 'General')) as role_type,
       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ctc) as median_ctc,
       MAX(ctc) as max_ctc,
       COUNT(id) as total_offers
     FROM jobs
     WHERE ctc IS NOT NULL AND is_active = true
-    GROUP BY category, category_group
+    GROUP BY TRIM(COALESCE(category, 'Other')), TRIM(COALESCE(category_group, 'General'))
     ORDER BY total_offers DESC
   ) t;
   

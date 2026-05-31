@@ -37,8 +37,8 @@ export default function CompensationChart() {
           // Format data for Recharts, taking top 10 departments by volume
           const formatted = result.data.slice(0, 10).map((item: any) => ({
             name: item.department,
-            "Median CTC (LPA)": item.median_ctc,
-            "Max CTC (LPA)": item.max_ctc,
+            median_ctc: item.median_ctc,
+            max_ctc: item.max_ctc,
             Offers: item.total_offers,
           }));
           setData(formatted);
@@ -90,11 +90,11 @@ export default function CompensationChart() {
               axisLine={false}
             />
             <YAxis 
-              stroke="#94a3b8" 
+              stroke="#6b7280" 
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `₹${value}L`}
+              tickFormatter={(value) => `₹${value / 100000}L`}
             />
             <Tooltip
               cursor={{ fill: '#ffffff0a' }}
@@ -108,13 +108,15 @@ export default function CompensationChart() {
             />
             <Legend wrapperStyle={{ paddingTop: '20px' }} />
             <Bar 
-              dataKey="Median CTC (LPA)" 
-              fill="#00f0ff" 
+              dataKey="median_ctc" 
+              name="Median CTC (LPA)"
+              fill="#06b6d4" 
               radius={[4, 4, 0, 0]} 
               barSize={20} 
             />
             <Bar 
-              dataKey="Max CTC (LPA)" 
+              dataKey="max_ctc" 
+              name="Max CTC (LPA)"
               fill="#a855f7" 
               radius={[4, 4, 0, 0]} 
               barSize={20} 
