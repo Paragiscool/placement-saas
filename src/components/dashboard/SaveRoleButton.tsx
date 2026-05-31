@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Bookmark } from "lucide-react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/lib/supabase/client"
 
 interface SaveRoleButtonProps {
   company: string
@@ -13,7 +13,7 @@ interface SaveRoleButtonProps {
 export default function SaveRoleButton({ company, role, skills }: SaveRoleButtonProps) {
   // Local state for the optimistic UI toggle
   const [isSaved, setIsSaved] = useState(false)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   const toggleSave = async (e: React.MouseEvent) => {
     e.stopPropagation() // Prevents the accordion from closing
