@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-surface flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
       {/* Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/20 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 blur-[120px] rounded-full pointer-events-none" />
@@ -123,28 +123,6 @@ export default function LoginPage() {
                   {isLogin ? "Sign In" : "Sign Up"} <ArrowRight className="w-5 h-5" />
                 </>
               )}
-            </button>
-
-            {/* Temporary Dev Button - REMOVE BEFORE PRODUCTION */}
-            <button 
-              type="button"
-              onClick={async () => {
-                setLoading(true);
-                // Hardcoded test user so you don't have to type it every time
-                const { error } = await supabase.auth.signInWithPassword({
-                  email: 'test@example.com',
-                  password: 'password123',
-                });
-                if (error) {
-                  setError("Dev Mode: User 'test@example.com' not found or invalid. Please create it in Supabase first.");
-                  setLoading(false);
-                } else {
-                  router.push('/dashboard');
-                }
-              }}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-xl mt-4 transition-colors"
-            >
-              ⚡ Dev Mode: 1-Click Login
             </button>
           </form>
 

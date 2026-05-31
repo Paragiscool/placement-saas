@@ -231,58 +231,108 @@ class RAGQueryRequest(BaseModel):
 @app.post("/api/rag-query")
 async def rag_query(request: RAGQueryRequest):
     """
-    RAG-powered placement intelligence query endpoint.
-
-    Multi-step retrieval:
-      1. Embed the user query
-      2. Pre-filter by metadata (schema_type, company_name)
-      3. Semantic vector search using cosine similarity
-      4. Synthesize response with Gemini using retrieved context
+    High-Recall RAG retrieval with Query Expansion, Hybrid Search, and RRF.
     """
     try:
-        # Step 1: Embed the user's query
-        query_vector = rag_embeddings.embed_query(request.query)
+        # --- Phase 1: Query Expansion ---
+        expansion_prompt = f"""
+        Extract core technical concepts from the following query. 
+        Return ONLY a comma-separated list of 3-5 keywords, synonyms, alternative tool names, or related engineering terms. 
+        Do not include conversational words.
+        Query: {request.query}
+        """
+        expansion_response = llm.invoke(expansion_prompt)
+        
+        expansion_content = expansion_response.content
+        if isinstance(expansion_content, list):
+            expansion_content = " ".join([str(item.get("text", item)) if isinstance(item, dict) else str(item) for item in expansion_content])
+        elif not isinstance(expansion_content, str):
+            expansion_content = str(expansion_content)
+            
+        expanded_keywords = [k.strip() for k in expansion_content.split(',') if len(k.strip()) > 2]
+        expanded_query = request.query + " " + " ".join(expanded_keywords)
 
-        # Step 2: Call the match_rag_documents Supabase function
-        # This function handles both vector similarity AND metadata filtering
+        # --- Phase 2: Hybrid Retrieval ---
+        # 2a. Vector Search
+        query_vector = rag_embeddings.embed_query(expanded_query)
         rpc_params = {
             "query_embedding": query_vector,
-            "match_threshold": 0.3,
-            "match_count": request.max_results,
+            "match_threshold": 0.2, # Lower threshold for wider net
+            "match_count": 20,      # Top 20 for expansion
         }
         if request.schema_filter:
             rpc_params["filter_schema_type"] = request.schema_filter
         if request.company_filter:
             rpc_params["filter_company"] = request.company_filter
 
-        search_response = supabase.rpc("match_rag_documents", rpc_params).execute()
-        results = search_response.data or []
+        vector_response = supabase.rpc("match_rag_documents", rpc_params).execute()
+        vector_results = vector_response.data or []
 
-        if not results:
-            # Fallback: try broader search without filters
-            fallback_params = {
-                "query_embedding": query_vector,
-                "match_threshold": 0.2,
-                "match_count": request.max_results,
-            }
-            search_response = supabase.rpc("match_rag_documents", fallback_params).execute()
-            results = search_response.data or []
+        # 2b. Keyword Search using expanded keywords
+        keyword_results = []
+        if expanded_keywords:
+            # Build ilike conditions for rag_document_embeddings content
+            or_conditions = ",".join([f"content.ilike.%{kw}%" for kw in expanded_keywords])
+            kw_resp = supabase.table("rag_document_embeddings") \
+                .select("document_id, content, rag_documents(schema_type, company_name)") \
+                .or_(or_conditions) \
+                .limit(20) \
+                .execute()
+            
+            # Format to match vector results structure
+            for item in (kw_resp.data or []):
+                rd = item.get("rag_documents")
+                if isinstance(rd, list) and len(rd) > 0:
+                    rd = rd[0]
+                elif not isinstance(rd, dict):
+                    rd = {}
+                keyword_results.append({
+                    "document_id": item["document_id"],
+                    "content": item["content"],
+                    "schema_type": rd.get("schema_type", "N/A"),
+                    "company_name": rd.get("company_name", "N/A"),
+                })
 
-        # Step 3: Build context from retrieved documents
-        if not results:
+        # --- Phase 3: RRF Merge & Context Compacting ---
+        merged_results = {}
+        RRF_K = 60
+
+        # Score Vector results
+        for rank, res in enumerate(vector_results):
+            doc_id = res["document_id"]
+            merged_results[doc_id] = merged_results.get(doc_id, {"data": res, "score": 0})
+            merged_results[doc_id]["score"] += 1.0 / (RRF_K + rank + 1)
+            
+        # Score Keyword results
+        for rank, res in enumerate(keyword_results):
+            doc_id = res["document_id"]
+            if doc_id not in merged_results:
+                merged_results[doc_id] = {"data": res, "score": 0}
+            merged_results[doc_id]["score"] += 1.0 / (RRF_K + rank + 1)
+
+        # Sort and select Top 5
+        sorted_results = sorted(merged_results.values(), key=lambda x: x["score"], reverse=True)[:5]
+        top_candidates = [item["data"] for item in sorted_results]
+
+        # Compact context
+        if not top_candidates:
             context_text = "No specific placement data found in the database for this query."
         else:
             context_blocks = []
-            for i, result in enumerate(results, 1):
+            for i, result in enumerate(top_candidates, 1):
+                # Truncate content to 1000 characters to prevent token overflow
+                content_snippet = result.get('content', 'No content')
+                if len(content_snippet) > 1000:
+                    content_snippet = content_snippet[:1000] + "... [truncated]"
+                
                 context_blocks.append(
                     f"[Source {i} | Type: {result.get('schema_type', 'N/A')} | "
-                    f"Company: {result.get('company_name', 'N/A')} | "
-                    f"Similarity: {result.get('similarity', 0):.2f}]\n"
-                    f"{result.get('content', 'No content')}"
+                    f"Company: {result.get('company_name', 'N/A')}]\n"
+                    f"{content_snippet}"
                 )
             context_text = "\n\n---\n\n".join(context_blocks)
 
-        # Step 4: Synthesize with Gemini
+        # --- Phase 4: Synthesize with Gemini ---
         synthesis_prompt = f"""You are PlacementIQ, an expert advisor on IIT Kharagpur campus placements.
 You have access to verified placement intelligence data. Use ONLY the provided context to answer.
 If the context doesn't contain enough information, say so honestly — do NOT hallucinate.
@@ -293,29 +343,37 @@ CONTEXT FROM RAG DATABASE:
 {context_text}
 
 USER QUERY: {request.query}
+EXPANDED QUERY TERMS: {', '.join(expanded_keywords)}
 
 Provide a detailed, actionable response based strictly on the context above."""
 
         ai_response = llm.invoke(synthesis_prompt)
 
-        # Build response with source attribution
+        ai_content = ai_response.content
+        if isinstance(ai_content, list):
+            ai_content = " ".join([str(item.get("text", item)) if isinstance(item, dict) else str(item) for item in ai_content])
+        elif not isinstance(ai_content, str):
+            ai_content = str(ai_content)
+
         sources = [
             {
                 "document_type": r.get("schema_type"),
-                "company": r.get("company_name"),
-                "similarity": round(r.get("similarity", 0), 3),
+                "company": r.get("company_name")
             }
-            for r in results
+            for r in top_candidates
         ]
 
         return {
-            "answer": ai_response.content,
+            "answer": ai_content,
             "sources": sources,
-            "total_sources_found": len(results),
+            "total_sources_found": len(merged_results),
+            "expanded_keywords": expanded_keywords,
             "query": request.query,
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {"error": f"RAG query failed: {str(e)}", "answer": None, "sources": []}
 
 

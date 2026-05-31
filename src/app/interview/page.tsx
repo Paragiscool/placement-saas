@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Target, Brain, MessageSquare, Play } from "lucide-react";
+import { ArrowLeft, Play, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import InterviewChat from "@/components/interview/InterviewChat";
+import ScorecardView from "@/components/interview/ScorecardView";
 
 interface Message {
   role: "user" | "ai";
@@ -46,7 +44,6 @@ export default function InterviewRoom() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -59,14 +56,6 @@ export default function InterviewRoom() {
     }
     loadInitialData();
   }, [supabase]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading, scorecard]);
 
   const getSelectedJobContext = () => {
     const job = jobs.find(j => j.id === selectedJobId);
@@ -169,22 +158,16 @@ export default function InterviewRoom() {
     }
   };
 
-  const renderVerdictBadge = (verdict: string) => {
-    if (verdict.includes("Strong Hire")) return <span className="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-1.5 rounded-full font-bold uppercase tracking-wider">{verdict}</span>;
-    if (verdict.includes("Lean Hire")) return <span className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-4 py-1.5 rounded-full font-bold uppercase tracking-wider">{verdict}</span>;
-    return <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-1.5 rounded-full font-bold uppercase tracking-wider">{verdict}</span>;
-  };
-
   if (!hasStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0f1e] p-6 relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface p-6 relative overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-neon/20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 blur-[120px] rounded-full pointer-events-none" />
         
-        <button onClick={() => router.push('/')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+        <Link href="/dashboard" className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </button>
+        </Link>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -230,17 +213,17 @@ export default function InterviewRoom() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0f1e] text-slate-100 font-sans relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-surface text-slate-100 font-sans relative overflow-hidden">
       {/* Background Gradients */}
       <div className="absolute top-0 left-1/4 w-1/2 h-1/3 bg-neon/5 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Header */}
       <header className="glass border-b border-glass-border px-6 py-4 flex items-center justify-between z-10 sticky top-0">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+          <Link href="/dashboard" className="text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-semibold hidden md:inline">Exit Interview</span>
-          </button>
+          </Link>
           <div>
             <h1 className="text-lg font-bold text-white flex items-center gap-2">
               Mock Interview Room
@@ -280,177 +263,24 @@ export default function InterviewRoom() {
 
         <AnimatePresence mode="wait">
           {!scorecard ? (
-            /* Chat Mode */
-            <motion.div 
+            <InterviewChat
               key="chat"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-4xl mx-auto space-y-6 pb-20"
-            >
-              {messages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-5 py-4 shadow-sm ${
-                      msg.role === "user"
-                        ? "bg-neon/10 border border-neon/20 text-white rounded-br-none"
-                        : "bg-white/5 border border-glass-border text-slate-200 rounded-bl-none"
-                    }`}
-                  >
-                    <div className="prose prose-invert prose-sm md:prose-base max-w-none prose-pre:bg-black/50 prose-pre:border prose-pre:border-glass-border">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          code({ node, inline, className, children, ...props }: any) {
-                            const match = /language-(\w+)/.exec(className || "");
-                            return !inline && match ? (
-                              <SyntaxHighlighter
-                                style={vscDarkPlus}
-                                language={match[1]}
-                                PreTag="div"
-                                className="rounded-lg my-3 !bg-black/40 border border-glass-border"
-                                {...props}
-                              >
-                                {String(children).replace(/\n$/, "")}
-                              </SyntaxHighlighter>
-                            ) : (
-                              <code className={`${inline ? "bg-white/10 text-neon px-1.5 py-0.5 rounded text-sm" : ""}`} {...props}>
-                                {children}
-                              </code>
-                            );
-                          },
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white/5 border border-glass-border rounded-2xl rounded-bl-none px-5 py-4 flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-neon/60 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-neon/60 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></div>
-                    <div className="w-2 h-2 bg-neon/60 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </motion.div>
+              messages={messages}
+              isLoading={isLoading}
+              isEvaluating={isEvaluating}
+              input={input}
+              setInput={setInput}
+              handleSend={handleSend}
+            />
           ) : (
-            /* Scorecard Mode */
-            <motion.div 
-              key="scorecard"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", damping: 25 }}
-              className="max-w-4xl mx-auto pb-10"
-            >
-              <div className="glass-card rounded-2xl overflow-hidden shadow-2xl border border-glass-border">
-                {/* Scorecard Header */}
-                <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-b border-glass-border p-8 text-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                  <h2 className="text-3xl font-bold text-white mb-2 relative z-10">Interview Evaluation</h2>
-                  <p className="text-slate-300 mb-6 relative z-10">{getSelectedJobContext()}</p>
-                  <div className="flex justify-center relative z-10">
-                    {renderVerdictBadge(scorecard.final_verdict)}
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  {/* Scores Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
-                      <Brain className="w-6 h-6 text-purple-400 mb-3" />
-                      <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Technical Depth</p>
-                      <p className="text-4xl font-black text-white">{scorecard.technical_depth_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
-                    </div>
-                    <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
-                      <MessageSquare className="w-6 h-6 text-blue-400 mb-3" />
-                      <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Communication</p>
-                      <p className="text-4xl font-black text-white">{scorecard.communication_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
-                    </div>
-                    <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
-                      <Target className="w-6 h-6 text-neon mb-3" />
-                      <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Problem Solving</p>
-                      <p className="text-4xl font-black text-white">{scorecard.problem_solving_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Strengths */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-glass-border pb-2">
-                        <TrendingUp className="w-5 h-5 text-green-400" /> Key Strengths
-                      </h3>
-                      <ul className="space-y-3">
-                        {scorecard.strengths.map((s, i) => (
-                          <li key={i} className="flex items-start gap-3 bg-green-500/5 border border-green-500/10 p-3 rounded-lg">
-                            <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-slate-300 text-sm leading-relaxed">{s}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Areas for Improvement */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-glass-border pb-2">
-                        <TrendingDown className="w-5 h-5 text-red-400" /> Areas for Improvement
-                      </h3>
-                      <ul className="space-y-3">
-                        {scorecard.areas_for_improvement.map((a, i) => (
-                          <li key={i} className="flex items-start gap-3 bg-red-500/5 border border-red-500/10 p-3 rounded-lg">
-                            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-slate-300 text-sm leading-relaxed">{a}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Return to Dashboard Button */}
-                <div className="bg-black/20 p-6 flex justify-center border-t border-glass-border">
-                  <button 
-                    onClick={() => router.push('/')} 
-                    className="bg-neon text-black hover:bg-neon/90 px-8 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all flex items-center gap-2"
-                  >
-                    <ArrowLeft className="w-5 h-5" /> Return to Dashboard
-                  </button>
-                </div>
-              </div>
-            </motion.div>
+            <ScorecardView 
+              key="scorecard" 
+              scorecard={scorecard} 
+              jobContext={getSelectedJobContext()} 
+            />
           )}
         </AnimatePresence>
       </main>
-
-      {/* Input Area (Hidden during scorecard mode) */}
-      {!scorecard && (
-        <footer className="glass border-t border-glass-border p-4 sticky bottom-0 z-20">
-          <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSend} className="relative flex items-center">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your response or write code..."
-                className="w-full bg-black/50 border border-glass-border rounded-xl py-3.5 pl-5 pr-14 text-white focus:outline-none focus:border-neon/50 transition-all placeholder:text-slate-500"
-                disabled={isLoading || isEvaluating}
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading || isEvaluating}
-                className="absolute right-2 p-2 bg-neon text-black hover:bg-neon/90 disabled:bg-white/10 disabled:text-slate-500 rounded-lg transition-colors flex items-center justify-center w-10 h-10 shadow-[0_0_10px_rgba(0,240,255,0.2)] disabled:shadow-none"
-              >
-                <Send className="w-4 h-4 ml-0.5" />
-              </button>
-            </form>
-          </div>
-        </footer>
-      )}
     </div>
   );
 }

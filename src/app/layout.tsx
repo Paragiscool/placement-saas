@@ -14,13 +14,13 @@ export const metadata: Metadata = {
   keywords: ['IIT KGP', 'placements', 'jobs', 'internship', 'CTC', 'dashboard'],
 }
 
-import Navbar from "@/components/Navbar"
+import ConditionalTopbar from "@/components/layout/ConditionalTopbar"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans bg-[#0a0f1e] text-slate-100 antialiased min-h-screen flex flex-col`}>
-        <Navbar />
+      <body className={`${inter.variable} font-sans bg-surface text-slate-100 antialiased min-h-screen flex flex-col`}>
+        <ConditionalTopbar />
         <main className="flex-grow">
           {children}
         </main>
