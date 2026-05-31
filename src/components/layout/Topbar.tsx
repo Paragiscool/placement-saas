@@ -47,6 +47,28 @@ export default function Topbar() {
           </div>
         </div>
 
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-1">
+          <a
+            href="/explore"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-400 hover:text-neon hover:bg-neon/5 rounded-lg transition-all font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Explore
+          </a>
+          <a
+            href="/chat"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-400 hover:text-purple-400 hover:bg-purple-500/5 rounded-lg transition-all font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Senior AI
+          </a>
+        </nav>
+
         <div className="flex-1" />
 
         {/* Auth */}

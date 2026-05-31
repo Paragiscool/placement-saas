@@ -377,6 +377,149 @@ Provide a detailed, actionable response based strictly on the context above."""
         return {"error": f"RAG query failed: {str(e)}", "answer": None, "sources": []}
 
 
+# ==========================================================================
+# STRUCTURED SEARCH ENDPOINT — Lightning-fast role search for Explore Portal
+# ==========================================================================
+
+class SearchRolesRequest(BaseModel):
+    query: str
+    department: Optional[str] = None
+    min_cgpa: Optional[float] = None
+
+
+@app.post("/api/search-roles")
+async def search_roles(request: SearchRolesRequest):
+    """
+    Structured vector search for the /explore portal.
+    Returns raw metadata as JSON — no LLM synthesis, so it's instant.
+    """
+    try:
+        # Step 1: Vectorize the query
+        query_vector = rag_embeddings.embed_query(request.query)
+
+        # Step 2: Vector similarity search against Supabase
+        rpc_params = {
+            "query_embedding": query_vector,
+            "match_threshold": 0.45,
+            "match_count": 15,
+        }
+        vector_response = supabase.rpc("match_rag_documents", rpc_params).execute()
+        raw_results = vector_response.data or []
+
+        # Step 3: Format into structured role cards
+        roles = []
+        seen_ids = set()
+
+        for result in raw_results:
+            doc_id = result.get("document_id", "")
+            if doc_id in seen_ids:
+                continue
+            seen_ids.add(doc_id)
+
+            schema_type = result.get("schema_type", "unknown")
+            company = result.get("company_name") or "Unknown"
+            payload = result.get("payload") or {}
+            content = result.get("content", "")
+            similarity = result.get("similarity", 0)
+
+            # Extract structured fields based on schema type
+            role_title = "N/A"
+            skills = []
+            departments = []
+            difficulty = None
+            hiring_volume = None
+            compensation_tier = None
+            description = ""
+
+            if schema_type == "interview":
+                entity = payload.get("entity", {})
+                pipeline = payload.get("assessment_pipeline", {})
+                prep = payload.get("preparation_strategy", {})
+
+                role_title = entity.get("role_title", "N/A")
+                departments = entity.get("target_departments", [])
+                hiring_volume = entity.get("hiring_volume")
+                compensation_tier = entity.get("compensation_tier")
+
+                # Gather skills from OA topics + prep critical topics
+                oa = pipeline.get("online_assessment", {})
+                if oa:
+                    skills.extend(oa.get("core_topics_tested", []))
+                    difficulty = oa.get("difficulty_rating")
+                if prep:
+                    skills.extend(prep.get("critical_topics", []))
+
+                description = f"Interview experience for {role_title} at {company}"
+
+            elif schema_type == "compensation":
+                comp = payload.get("specific_compensation_data", {})
+                macro = payload.get("macro_placement_context", {})
+                if comp:
+                    role_title = comp.get("role_title", "N/A")
+                    description = f"Compensation data for {role_title} at {company}"
+                elif macro:
+                    role_title = "Macro Statistics"
+                    description = f"IIT KGP placement statistics"
+                    company = macro.get("institute", "IIT Kharagpur")
+
+            elif schema_type == "prep_resource":
+                details = payload.get("resource_details", {})
+                role_title = details.get("resource_title", "Prep Resource")
+                skills = details.get("core_theoretical_topics", [])
+                departments = details.get("target_disciplines", [])
+                description = details.get("description", "")
+
+            elif schema_type == "osint_tool":
+                arch = payload.get("tool_architecture", {})
+                role_title = arch.get("tool_name", "OSINT Tool")
+                skills = arch.get("technology_stack", [])
+                description = arch.get("primary_function", "")
+
+            # Deduplicate skills
+            skills = list(dict.fromkeys(skills))[:8]
+
+            # Apply department filter (if provided)
+            if request.department:
+                dept_lower = request.department.lower()
+                dept_match = any(dept_lower in d.lower() for d in departments)
+                content_match = dept_lower in content.lower()
+                if not dept_match and not content_match and departments:
+                    continue
+
+            role_card = {
+                "company": company,
+                "role": role_title,
+                "schema_type": schema_type,
+                "skills": skills,
+                "departments": departments,
+                "difficulty": difficulty,
+                "hiring_volume": hiring_volume,
+                "compensation_tier": compensation_tier,
+                "description": description,
+                "similarity_score": round(similarity, 3),
+                "document_id": doc_id,
+            }
+            roles.append(role_card)
+
+        # Filter out junk rows (seed artifacts with no real company/role data)
+        clean_results = [
+            role for role in roles
+            if role["company"] not in ("Various", "Unknown", "N/A")
+            and role["role"] not in ("N/A", "Macro Statistics")
+        ]
+
+        return {
+            "results": clean_results,
+            "total": len(clean_results),
+            "query": request.query,
+        }
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Search failed: {str(e)}", "results": [], "total": 0}
+
+
 # --------------------------------------------------------------------------
 # Health check with RAG stats
 # --------------------------------------------------------------------------
