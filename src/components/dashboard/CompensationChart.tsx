@@ -34,14 +34,34 @@ export default function CompensationChart() {
         const result = await response.json();
         
         if (result.data) {
-          // Format data for Recharts, taking top 10 departments by volume
-          const formatted = result.data.slice(0, 10).map((item: any) => ({
-            name: item.department,
-            median_ctc: item.median_ctc,
-            max_ctc: item.max_ctc,
-            Offers: item.total_offers,
-          }));
-          setData(formatted);
+          // 1. Sanitize, Trim, and Convert the Data
+          const cleanDataMap = new Map();
+
+          result.data.forEach((item: any) => {
+            // Remove trailing/leading spaces from the department name
+            const cleanDept = item.department ? item.department.trim() : "Unknown";
+            
+            // Force strings to Numbers (fallback to 0 if NaN)
+            const medCtc = Number(item.median_ctc) || 0;
+            const maxCtc = Number(item.max_ctc) || 0;
+
+            if (cleanDataMap.has(cleanDept)) {
+              // If we already have this department, update the max and average the medians (or keep highest)
+              const existing = cleanDataMap.get(cleanDept);
+              existing.max_ctc = Math.max(existing.max_ctc, maxCtc);
+              existing.median_ctc = (existing.median_ctc + medCtc) / 2; // Simple merge
+            } else {
+              cleanDataMap.set(cleanDept, {
+                name: cleanDept,
+                median_ctc: medCtc,
+                max_ctc: maxCtc,
+              });
+            }
+          });
+
+          // 2. Convert map back to array and feed to chart (limit to top 10 for clean UI)
+          const finalData = Array.from(cleanDataMap.values()).slice(0, 10);
+          setData(finalData);
         }
       } catch (err: any) {
         console.error("Failed to fetch analytics:", err);
