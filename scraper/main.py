@@ -258,7 +258,7 @@ async def rag_query(request: RAGQueryRequest):
         rpc_params = {
             "query_embedding": query_vector,
             "match_threshold": 0.2, # Lower threshold for wider net
-            "match_count": 20,      # Top 20 for expansion
+            "match_count": 10,      # Top 10 for expansion
         }
         if request.schema_filter:
             rpc_params["filter_schema_type"] = request.schema_filter
@@ -310,8 +310,8 @@ async def rag_query(request: RAGQueryRequest):
                 merged_results[doc_id] = {"data": res, "score": 0}
             merged_results[doc_id]["score"] += 1.0 / (RRF_K + rank + 1)
 
-        # Sort and select Top 5
-        sorted_results = sorted(merged_results.values(), key=lambda x: x["score"], reverse=True)[:5]
+        # Sort and select Top 10
+        sorted_results = sorted(merged_results.values(), key=lambda x: x["score"], reverse=True)[:10]
         top_candidates = [item["data"] for item in sorted_results]
 
         # Compact context
