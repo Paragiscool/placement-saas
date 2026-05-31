@@ -41,9 +41,14 @@ export default function CompensationChart() {
             // Remove trailing/leading spaces from the department name
             const cleanDept = item.department ? item.department.trim() : "Unknown";
             
-            // Force to Number, fallback to 0, and immediately convert to Lakhs (LPA)
-            const medCtc = (Number(item.median_ctc) || 0) / 100000; 
-            const maxCtc = (Number(item.max_ctc) || 0) / 100000;
+            // Normalize the data magnitude. 
+            // The database contains a mix of absolute rupees (e.g., 5500000) and Lakhs (e.g., 22.5).
+            // If the number is > 1000, we assume it's absolute and convert it to LPA.
+            const rawMed = Number(item.median_ctc) || 0;
+            const rawMax = Number(item.max_ctc) || 0;
+            
+            const medCtc = rawMed > 1000 ? rawMed / 100000 : rawMed;
+            const maxCtc = rawMax > 1000 ? rawMax / 100000 : rawMax;
 
             if (cleanDataMap.has(cleanDept)) {
               // If we already have this department, update the max and average the medians (or keep highest)
