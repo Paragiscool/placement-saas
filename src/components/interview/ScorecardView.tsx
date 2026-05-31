@@ -49,17 +49,17 @@ export default function ScorecardView({ scorecard, jobContext }: ScorecardViewPr
             <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
               <Brain className="w-6 h-6 text-purple-400 mb-3" />
               <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Technical Depth</p>
-              <p className="text-4xl font-black text-white">{scorecard.technical_depth_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
+              <p className="text-4xl font-black text-white">{scorecard.technical_depth_score}<span className="text-xl text-slate-500 font-medium">/100</span></p>
             </div>
             <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
               <MessageSquare className="w-6 h-6 text-blue-400 mb-3" />
               <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Communication</p>
-              <p className="text-4xl font-black text-white">{scorecard.communication_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
+              <p className="text-4xl font-black text-white">{scorecard.communication_score}<span className="text-xl text-slate-500 font-medium">/100</span></p>
             </div>
             <div className="bg-white/5 border border-glass-border rounded-xl p-5 text-center flex flex-col items-center justify-center">
               <Target className="w-6 h-6 text-neon mb-3" />
               <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-1">Problem Solving</p>
-              <p className="text-4xl font-black text-white">{scorecard.problem_solving_score}<span className="text-xl text-slate-500 font-medium">/10</span></p>
+              <p className="text-4xl font-black text-white">{scorecard.problem_solving_score}<span className="text-xl text-slate-500 font-medium">/100</span></p>
             </div>
           </div>
 

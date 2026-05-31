@@ -61,5 +61,5 @@ export function getCatConfig(category: string) {
 export function formatCTC(ctc: number | null, currency: string): string {
   if (!ctc || ctc <= 0) return '–'
   if (currency === 'INR') return `${ctc.toFixed(1)} LPA`
-  return `${ctc.toLocaleString()} ${currency}`
+  return `${ctc.toLocaleString('en-US')} ${currency}`
 }

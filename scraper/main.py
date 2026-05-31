@@ -172,13 +172,13 @@ async def generate_scorecard(request: ScorecardRequest, authorization: Optional[
         You are a strict, FAANG-level Principal Engineer and Hiring Manager.
         Review the following interview transcript for a {request.job_context} role.
         
-        Evaluate the candidate on a scale of 1-10 for:
-        1. Technical Depth (Accuracy, system design, algorithm optimization)
+        Evaluate the candidate on a scale of 1-100 for:
+        1. Technical Depth (Accuracy, system design, algorithm optimization, Big-O analysis)
         2. Communication (Clarity, structure, not rambling)
         3. Problem Solving (Handling edge cases, adapting to hints)
         
         Provide 2-3 specific strengths, 2-3 specific areas for improvement, and a final verdict (e.g., 'Strong Hire', 'Lean Hire', 'No Hire').
-        You must be highly critical. Do not give 10/10 unless the candidate was flawless.
+        You must be highly critical. Do not give 100/100 unless the candidate was flawless.
         
         TRANSCRIPT:
         {transcript_text}
@@ -518,6 +518,215 @@ async def search_roles(request: SearchRolesRequest):
         import traceback
         traceback.print_exc()
         return {"error": f"Search failed: {str(e)}", "results": [], "total": 0}
+
+
+# ==========================================================================
+# PERSONALIZED FEED ENDPOINT
+# ==========================================================================
+
+class ForYouRequest(BaseModel):
+    skills: str
+    department: str
+    cgpa: float
+
+@app.post("/api/for-you")
+async def for_you(request: ForYouRequest):
+    """
+    Personalized feed endpoint that executes a semantic vector search based on user skills.
+    Returns structured UI cards, filtered by CGPA cutoff.
+    """
+    try:
+        # Boost semantic matches by fusing department and skills
+        query_vector = rag_embeddings.embed_query(f"{request.department} {request.skills}")
+        
+        rpc_params = {
+            "query_embedding": query_vector,
+            "match_threshold": 0.35,
+            "match_count": 25,
+        }
+        vector_response = supabase.rpc("match_rag_documents", rpc_params).execute()
+        raw_results = vector_response.data or []
+        
+        roles = []
+        seen_ids = set()
+
+        for result in raw_results:
+            doc_id = result.get("document_id", "")
+            if doc_id in seen_ids:
+                continue
+
+            schema_type = result.get("schema_type", "unknown")
+            company = result.get("company_name") or "Unknown"
+            payload = result.get("payload") or {}
+            
+            # CGPA Filter Check
+            req_cgpa = 0.0
+            if schema_type == "interview":
+                 entity = payload.get("entity", {})
+                 req_cgpa = float(entity.get("min_cgpa") or 0.0)
+            
+            if req_cgpa > request.cgpa:
+                continue
+
+            # Extract basic info
+            role_title = "N/A"
+            compensation_tier = None
+            if schema_type == "interview":
+                entity = payload.get("entity", {})
+                role_title = entity.get("role_title", "N/A")
+                compensation_tier = entity.get("compensation_tier")
+            elif schema_type == "compensation":
+                comp = payload.get("specific_compensation_data", {})
+                if comp:
+                    role_title = comp.get("role_title", "N/A")
+            elif schema_type == "osint_tool":
+                arch = payload.get("tool_architecture", {})
+                if arch:
+                    role_title = arch.get("tool_name", "OSINT Tool")
+                
+            if company in ("Various", "Unknown", "N/A") or role_title in ("N/A", "Macro Statistics"):
+                continue
+
+            seen_ids.add(doc_id)
+            roles.append({
+                "document_id": doc_id,
+                "company": company,
+                "role": role_title,
+                "compensation_tier": compensation_tier
+            })
+            
+            if len(roles) >= 5:
+                break
+
+        return {"results": roles}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e), "results": []}
+
+
+# ==========================================================================
+# STATEFUL RAG INTERVIEWER ENDPOINT
+# ==========================================================================
+
+class MockInterviewMessage(BaseModel):
+    role: str
+    content: str
+
+class MockInterviewRequest(BaseModel):
+    company: str
+    role: str
+    messages: List[MockInterviewMessage]
+
+@app.post("/api/mock-interview")
+async def mock_interview(request: MockInterviewRequest):
+    """
+    Stateless backend junction box for the Mock Interview Simulator.
+    The frontend passes the entire conversation history, and we wrap it
+    in an agentic loop with context from our RAG database.
+    """
+    try:
+        # Step 2: Context Hydration
+        # We query the rag_documents table to pull real past interview questions
+        context_text = "No specific past questions found. Test them on standard DSA (Graphs, DP, Systems)."
+        
+        # We only need a few questions to guide the LLM, so limit to 5
+        response = supabase.table("rag_documents") \
+            .select("payload") \
+            .eq("schema_type", "interview") \
+            .ilike("company_name", f"%{request.company}%") \
+            .limit(5) \
+            .execute()
+            
+        if response.data:
+            questions = []
+            for doc in response.data:
+                payload = doc.get("payload", {})
+                pipeline = payload.get("assessment_pipeline", {})
+                rounds = pipeline.get("technical_rounds", [])
+                for r in rounds:
+                    for q in r.get("questions_asked", []):
+                        q_text = q.get("question", "")
+                        if q_text:
+                            questions.append(q_text)
+            
+            if questions:
+                # Deduplicate and limit
+                unique_qs = list(dict.fromkeys(questions))[:10]
+                context_text = "Real Past Interview Questions for this company:\n- " + "\n- ".join(unique_qs)
+
+        # Step 3: The Agentic System Prompt
+        system_prompt = f"""
+        You are a strict, senior technical interviewer for {request.company}. You are interviewing the user for the {request.role} position.
+        Ask ONE question at a time from the provided list of past interview topics.
+        Do not give the answer. Wait for the user to provide their code.
+        Whether they answer using Python, C++, or another language, rigidly evaluate their Big-O time complexity and memory management.
+        If they fail, give only one hint.
+        
+        {context_text}
+        """
+
+        # Format transcript
+        transcript_text = "\n".join([f"{'Candidate' if m.role == 'user' else 'Interviewer'}: {m.content}" for m in request.messages])
+        
+        final_prompt = f"{system_prompt}\n\nTranscript:\n{transcript_text}\n\nInterviewer:"
+
+        # Step 4: LLM Execution
+        ai_response = llm.invoke(final_prompt)
+        reply_content = ai_response.content
+        if isinstance(reply_content, list):
+            reply_content = " ".join([str(item.get("text", item)) if isinstance(item, dict) else str(item) for item in reply_content])
+        elif not isinstance(reply_content, str):
+            reply_content = str(reply_content)
+        
+        return {"response": reply_content}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"response": f"Backend Error: {str(e)}"}
+
+
+# ==========================================================================
+# DYNAMIC COMPENSATION ANALYTICS ENDPOINT
+# ==========================================================================
+
+import time
+
+# Simple in-memory cache with 1-hour TTL (3600 seconds)
+analytics_cache = {
+    "data": None,
+    "timestamp": 0
+}
+CACHE_TTL = 3600
+
+@app.get("/api/analytics")
+async def get_analytics():
+    """
+    Returns aggregated compensation analytics (median, max, volume).
+    Uses a 1-hour TTL cache to prevent Supabase overload.
+    """
+    try:
+        current_time = time.time()
+        
+        # 1. Return from cache if valid
+        if analytics_cache["data"] is not None and (current_time - analytics_cache["timestamp"]) < CACHE_TTL:
+            return {"source": "cache", "data": analytics_cache["data"]}
+            
+        # 2. Query Supabase RPC if cache miss
+        response = supabase.rpc("get_compensation_analytics", {}).execute()
+        data = response.data or []
+        
+        # 3. Update cache
+        analytics_cache["data"] = data
+        analytics_cache["timestamp"] = current_time
+        
+        return {"source": "db", "data": data}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Failed to fetch analytics: {str(e)}", "data": []}
 
 
 # --------------------------------------------------------------------------

@@ -1,23 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Play, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import InterviewChat from "@/components/interview/InterviewChat";
 import ScorecardView from "@/components/interview/ScorecardView";
 
 interface Message {
   role: "user" | "ai";
   content: string;
-}
-
-interface Job {
-  id: string;
-  company: string;
-  role: string;
 }
 
 interface Scorecard {
@@ -29,16 +23,17 @@ interface Scorecard {
   final_verdict: string;
 }
 
-export default function InterviewRoom() {
+function InterviewRoomContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const targetCompany = searchParams.get("company") || "";
+  const targetRole = searchParams.get("role") || "";
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
-  const [interviewId, setInterviewId] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [scorecard, setScorecard] = useState<Scorecard | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -46,31 +41,45 @@ export default function InterviewRoom() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    async function loadInitialData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || "00000000-0000-0000-0000-000000000000");
-
-      const { data: jobData } = await supabase.from("jobs").select("id, company, role").limit(100);
-      if (jobData) setJobs(jobData);
-    }
-    loadInitialData();
-  }, [supabase]);
-
   const getSelectedJobContext = () => {
-    const job = jobs.find(j => j.id === selectedJobId);
-    return job ? `${job.company} ${job.role}` : "General Software Engineering";
+    return targetCompany ? `${targetCompany} - ${targetRole}` : "General Engineering";
   };
 
-  const handleStart = () => {
-    if (!selectedJobId) return;
+  const startMockInterview = async () => {
     setHasStarted(true);
-    setMessages([
-      {
-        role: "ai",
-        content: `Hello! I'm your Guiding Senior. Let's do a mock interview for the ${getSelectedJobContext()} role. Are you ready?`,
-      },
-    ]);
+    setIsLoading(true);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_BASE}/api/mock-interview`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          company: targetCompany,
+          role: targetRole,
+          messages: []
+        }),
+      });
+
+      if (!response.ok) throw new Error("Backend error");
+      const data = await response.json();
+      setMessages([{ role: "ai", content: data.response }]);
+    } catch (error) {
+      setMessages([{ role: "ai", content: "Oops, looks like my connection dropped. Can you refresh?" }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Auto-start if company and role are provided in the URL
+  useEffect(() => {
+    if (targetCompany && targetRole && !hasStarted && !isLoading) {
+      startMockInterview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetCompany, targetRole]);
+
+  const handleStartManual = () => {
+    startMockInterview();
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -79,36 +88,27 @@ export default function InterviewRoom() {
 
     const userMsg = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    
+    const newMessages = [...messages, { role: "user" as const, content: userMsg }];
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${API_BASE}/api/chat`, {
+      const response = await fetch(`${API_BASE}/api/mock-interview`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          message: userMsg,
-          user_id: userId,
-          job_id: selectedJobId,
-          interview_id: interviewId,
-          history: [...messages, { role: "user", content: userMsg }]
+          company: targetCompany,
+          role: targetRole,
+          messages: newMessages
         }),
       });
 
       if (!response.ok) throw new Error("Network response was not ok");
-
       const data = await response.json();
-      setMessages((prev) => [...prev, { role: "ai", content: data.reply }]);
-      if (data.interview_id && !interviewId) {
-        setInterviewId(data.interview_id);
-      }
+      setMessages((prev) => [...prev, { role: "ai", content: data.response }]);
+      
     } catch (error) {
       console.error("Error fetching AI response:", error);
       setMessages((prev) => [
@@ -124,15 +124,15 @@ export default function InterviewRoom() {
     setIsEvaluating(true);
     setErrorMessage(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const { data: { user } } = await supabase.auth.getUser();
+
       const body: any = {
         messages: messages.map(m => ({ role: m.role, content: m.content })),
         job_context: getSelectedJobContext(),
       };
-      if (interviewId) body.interview_id = interviewId;
-      if (userId) body.user_id = userId;
-
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      if (user) body.user_id = user.id;
 
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const response = await fetch(`${API_BASE}/api/scorecard`, {
@@ -180,31 +180,16 @@ export default function InterviewRoom() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Mock Interview</h1>
-              <p className="text-slate-400 text-sm">Select a role to begin</p>
+              <p className="text-slate-400 text-sm">Launch from the dashboard roles</p>
             </div>
           </div>
           
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Target Role / Company</label>
-              <select 
-                className="w-full bg-black/40 border border-glass-border rounded-xl p-3 text-white focus:ring-2 focus:ring-neon/50 focus:border-neon outline-none transition-all appearance-none"
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-              >
-                <option value="" disabled className="bg-gray-900">Select a Job...</option>
-                {jobs.map((job) => (
-                  <option key={job.id} value={job.id} className="bg-gray-900">{job.company} - {job.role}</option>
-                ))}
-              </select>
-            </div>
-
             <button 
-              onClick={handleStart}
-              disabled={!selectedJobId}
-              className="w-full bg-neon text-black hover:bg-neon/90 disabled:bg-slate-700 disabled:text-slate-400 font-bold py-3 px-4 rounded-xl transition-all shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:shadow-none flex items-center justify-center gap-2"
+              onClick={handleStartManual}
+              className="w-full bg-neon text-black hover:bg-neon/90 font-bold py-3 px-4 rounded-xl transition-all shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] flex items-center justify-center gap-2"
             >
-              Start Interview
+              Start General Interview
             </button>
           </div>
         </motion.div>
@@ -283,4 +268,17 @@ export default function InterviewRoom() {
       </main>
     </div>
   );
+}
+
+export default function InterviewRoom() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface p-6">
+        <div className="w-8 h-8 border-4 border-neon border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-neon font-bold animate-pulse">Initializing Interview Room...</p>
+      </div>
+    }>
+      <InterviewRoomContent />
+    </Suspense>
+  )
 }

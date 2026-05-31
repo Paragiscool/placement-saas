@@ -1,17 +1,61 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MessageSquare, ArrowRight } from 'lucide-react'
 
-import JobTable from '@/components/dashboard/JobTable'
-import CategoryCards from '@/components/dashboard/CategoryCards'
-import ChartsSection from '@/components/dashboard/ChartsSection'
+import CompensationChart from '@/components/dashboard/CompensationChart'
 import ProgressSection from '@/components/dashboard/ProgressSection'
+import CategoryAccordion from '@/components/dashboard/CategoryAccordion'
 import type { Job } from '@/types'
 
+// Mock User Profile for semantic matching MVP
+const userProfile = { 
+  department: "Ocean Engineering & Naval Architecture", 
+  skills: "Machine Learning, Python, C++, LightGBM, Siamese Networks, Data Science", 
+  cgpa: 8.5 
+};
+
 export default function DashboardClient({ initialJobs, initialInterviews = [] }: { initialJobs: Job[], initialInterviews?: any[] }) {
-  const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [forYouJobs, setForYouJobs] = useState<Job[]>([]);
+
+  useEffect(() => {
+    async function fetchForYou() {
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${API_BASE}/api/for-you`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userProfile)
+        });
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          const formattedJobs: Job[] = data.results.map((r: any) => ({
+            id: r.document_id,
+            company: r.company,
+            role: r.role,
+            ctc: r.compensation_tier ? parseFloat(r.compensation_tier) : null,
+            currency: "INR",
+            location: null,
+            category: "✨ Recommended For You",
+            category_group: "tech",
+            college_tag: "IIT KGP",
+            apply_link: null,
+            is_active: true,
+            source: "AI",
+            posted_at: new Date().toISOString()
+          }));
+          setForYouJobs(formattedJobs);
+        }
+      } catch (error) {
+        console.error("Failed to fetch For You feed:", error);
+      }
+    }
+    fetchForYou();
+  }, []);
+
+  const combinedJobs = [...forYouJobs, ...initialJobs];
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
@@ -55,31 +99,19 @@ export default function DashboardClient({ initialJobs, initialInterviews = [] }:
         )}
 
         {/* Analytics Charts */}
-        <ChartsSection jobs={initialJobs} />
+        <section className="pt-6">
+          <CompensationChart />
+        </section>
 
-        {/* Category Browser */}
+        {/* Category Browser (Accordion) */}
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-white">Role Categories</h2>
             <p className="text-slate-400 text-sm mt-1">
-              Select any category card below to filter the full listings table.
+              Select any category row below to view matching roles and track your applications.
             </p>
           </div>
-          <CategoryCards 
-            jobs={initialJobs} 
-            activeCategory={activeCategory} 
-            onCategoryChange={setActiveCategory} 
-          />
-        </section>
-
-        {/* Full Listings Data Table */}
-        <section className="pt-6 border-t border-glass-border">
-          <h2 className="text-2xl font-bold text-white mb-6">Company Listings</h2>
-          <JobTable 
-            initialJobs={initialJobs} 
-            activeCategory={activeCategory} 
-            onCategoryChange={setActiveCategory} 
-          />
+          <CategoryAccordion jobs={combinedJobs} defaultExpanded="✨ Recommended For You" />
         </section>
 
       </main>

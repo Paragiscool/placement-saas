@@ -109,3 +109,29 @@ begin
   limit match_count;
 end;
 $$;
+
+-- --------------------------------------------------------------------------
+-- 5. Saved Roles (User Bookmarks)
+-- --------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.saved_roles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  company VARCHAR NOT NULL,
+  role VARCHAR NOT NULL,
+  skills VARCHAR,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, company, role) -- Prevents duplicate bookmarks
+);
+
+-- Enable Row Level Security (Crucial for SaaS)
+ALTER TABLE public.saved_roles ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS Policies
+CREATE POLICY "Users can view their own saved roles" 
+ON public.saved_roles FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own saved roles" 
+ON public.saved_roles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own saved roles" 
+ON public.saved_roles FOR DELETE USING (auth.uid() = user_id);
